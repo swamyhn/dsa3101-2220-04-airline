@@ -15,5 +15,5 @@ for year in all_years:
         year_dfs_list.append(pd.read_csv(file))
     year_df = pd.concat(year_dfs_list, ignore_index = True)
 
-    year_df.to_csv(f'output_path{year}.csv', index = False)
+    year_df.to_csv(f'{output_path}{year}.csv', index = False)
     print(str(year) + ' DONE')
