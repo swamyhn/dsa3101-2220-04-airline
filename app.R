@@ -5,42 +5,81 @@ library(ggplot2)
 library(tidyverse)
 library(plotly)
 library(dplyr)
+library(leaflet)
+library(airportr)
+library(shinyWidgets)
+library(geosphere)
+library(sp)
 
 # Define UI
-ui <- fluidPage(theme = shinytheme("cerulean"),
-                tags$head(
-                  tags$style(HTML(
-                    "#selected_year {
+ui <- navbarPage(
+  theme = shinytheme("cerulean"),
+  tags$head(
+    tags$style(HTML(
+      # "body {background: #ADD8E6}",
+      "#selected_year {
                     font-size: 18px;
                     padding-bottom: 20px;
-                  }
-                  "))
-                ),
-                titlePanel("Airline Delay Webapp"),
+                  }",
+      "#vis2_welcometext {
+        font-size: 18px;
+        padding-bottom: 20px;
+        }",
+      "#main-title {
+        font-size:20px;
+      }"
+      ))
 
-                sidebarLayout(
-                  sidebarPanel(
-                    selectInput("year", "Select year",
-                                choices = NULL,
-                                selected = ""),
-                    selectInput("month", "Select month",
-                                choices = NULL,
-                                selected = "")
-                  ),
-                  mainPanel(
-                    textOutput("selected_year"),
-                    fluidRow(
-                      column(width = 12, plotOutput("selected_plot")),
-                      column(width = 6, plotOutput("selected_plot_arr")),
-                      column(width = 6, plotOutput("selected_plot_dep"))
-                    )
-                  )
-                )
-) # fluidPage
+  ),
+  title = div("Airline Delay Webapp", id = "main-title"),
+  # tabsetPanel(
+    tabPanel("Vis 1",
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("year", "Select year",
+                             choices = NULL,
+                             selected = ""),
+                 selectInput("month", "Select month",
+                             choices = NULL,
+                             selected = ""),
+               ),
+               mainPanel(
+                 textOutput("selected_year"),
+                 fluidRow(
+                   column(width = 12, plotOutput("selected_plot")),
+                   column(width = 6, plotOutput("selected_plot_arr")),
+                   column(width = 6, plotOutput("selected_plot_dep"))
+                 )
+               )
+             )
+    ),
 
+  tabPanel("Vis 2",
+           sidebarLayout(
+             sidebarPanel(
+               selectInput("origin", "Select origin",
+                           choices = NULL,
+                           selected = ""),
+               selectInput("destination", "Select destination",
+                           choices = NULL,
+                           selected = ""),
+               actionButton("submit_button", "Enter!", disabled = TRUE)
+             ),
+             mainPanel(
+               textOutput("vis2_welcometext"),
+               #display map on screen
+               leafletOutput("locations") #locations is name of map
+             )
+           )
+  ),
+
+  tabPanel("Vis 3", "This is the page for the 3rd visualisation")
+
+)
 
 # Define server function
 server <- function(input, output) {
+
   month_order <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
   data <- read.csv("./unbinned_delay_count.csv")
   data$Month <- factor(data$Month, levels = month_order)
@@ -48,7 +87,7 @@ server <- function(input, output) {
   observe({
     updateSelectInput(inputId="year", choices=c("",unique(data$Year)), selected="")
   })
-  
+
   output$selected_year <- renderText({
     if (input$year != "") {
       paste0("Data of flight delays in Year ", input$year)
@@ -57,14 +96,15 @@ server <- function(input, output) {
     }
   })
   
+
   filtered_data_year <- reactive({
     subset(data, Year == input$year)
   })
-  
+
   observe({
     updateSelectInput(inputId="month", choices=c("",month_order[unique(filtered_data_year()$Month)]))
   })
-  
+
   output$selected_plot <- renderPlot({
     if (input$year == "") {
       return(NULL)
@@ -76,28 +116,28 @@ server <- function(input, output) {
              y = "Delay Count")
     }
   })
-  
+
   filtered_data_binned <- reactive({
     subset(binned_data, Year == input$year & Month == input$month)
   })
-  
+
   filtered_data_binned_arr <- reactive({
     filtered_data_binned() %>% select(starts_with("Arr_")) %>% gather(key = "arrBin", value = "value")
   })
-  
+
   filtered_data_binned_dep <- reactive({
     filtered_data_binned() %>% select(starts_with("Dep_")) %>% gather(key = "depBin", value = "value")
   })
-  
-  
+
+
   observeEvent(input$year, {
     # Render the plots as null
     output$selected_plot_arr <- renderPlot(NULL)
     output$selected_plot_dep <- renderPlot(NULL)
   })
-  
+
   monthPlot_bins <- c("60-74","75-89","90-104","105-119","120-134","135-149","150-164","165-179","Above 180")
-  
+
   # Create the ordered factor
   monthPlot_bins <- factor(monthPlot_bins, levels = monthPlot_bins)
   observeEvent(input$month, {
@@ -112,7 +152,7 @@ server <- function(input, output) {
                y = "Delay Count")
       }
     })
-    
+
     output$selected_plot_dep <- renderPlot({
       if (input$month == "") {
         return(NULL)
@@ -125,10 +165,77 @@ server <- function(input, output) {
       }
     })
   })
-  
-  
+
+
+  ##vis2:
+    list_unique_origins <- c("LAX", "SFO", "ATL")
+    list_unique_dests <- c("LAX", "SFO", "ATL")
+    output$vis2_welcometext <- renderText({
+      if (input$origin == "" | input$destination == "") {
+        paste0("Please select from the origin and destination dropdowns on the left panel")
+      }
+    })
+    observe({
+      updateSelectInput(inputId="origin", choices=c("",sort(unique(list_unique_origins))), selected="")
+      updateSelectInput(inputId="destination", choices=c("",sort(unique(list_unique_dests))), selected="")
+    })
+    # observeEvent(
+    cascade <- read.csv("./cascade.csv")
+    tempOrigin <- lapply(cascade$ORIGIN, airport_location)
+    cascade$originLat <- sapply(tempOrigin, function(x) x$Latitude)
+    cascade$originLng <- sapply(tempOrigin, function(x) x$Longitude)
+
+    tempDest <- lapply(cascade$DEST, airport_location)
+    cascade$destLat <- sapply(tempDest, function(x) x$Latitude)
+    cascade$destLng <- sapply(tempDest, function(x) x$Longitude)
+    cascade$markerColour <- c("blue")
+    cascade$markerColour[1] = "red"
+    
+    cascade$markerColour2 <- c("green")
+    markerColour2 <- cascade$markerColour2
+    
+    markerColour <- cascade$markerColour
+      
+    icons <- awesomeIcons(icon = 'ios-close',
+                          library = 'ion',
+                          markerColor =  markerColour)
+    icons2 <- awesomeIcons(icon = 'ios-close',
+                          library = 'ion',
+                          markerColor =  markerColour2)
+    
+    greenSubset <- cascade %>% filter(cascade$DEST != "LAX" & cascade$DEST != "SFO")
+    polyLinesSubset <- cascade %>% filter(cascade$DEST != "LAX")
+    
+    output$locations <- renderLeaflet({
+    #setup an empty map
+    first_row_data <- gcIntermediate(c(cascade$originLng[1],cascade$originLat[1]), c(cascade$destLng[1],cascade$destLat[1]),
+                                     n=100, 
+                                     addStartEnd=TRUE,
+                                     sp=TRUE)
+    locations <- leaflet(data=cascade)
+    map <- addTiles(locations)
+    tempMap <- addAwesomeMarkers(data = cascade, lat = ~originLat, lng = ~originLng,
+                     map = map, popup = ~ORIGIN, icon = icons) %>%
+      # addPolylines(lat = ~originLat, lng = ~originLng, color = "red", opacity = 0.5, weight = ~delayed_arr, label = paste("num delayed flights:", cascade$delayed_arr)) %>%
+      addPolylines(data = first_row_data, color = "red", opacity = 0.5, weight = cascade$delayed_arr[1], label = paste("num delayed flights:", cascade$delayed_arr[1])) %>%
+      addAwesomeMarkers(data = greenSubset, lat = ~destLat, lng = ~destLng, popup = ~DEST, icon = icons2)
+      # addPopups(lat = ~destLat, lng = ~destLng, popup =~DEST )
+    
+    polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.))
+    flights_lines <- apply(polyLinesSubset,1,function(x){
+      points <- data.frame(lng=as.numeric(c(x["originLng"], 
+                                            x["destLng"])),
+                           lat=as.numeric(c(x["originLat"], 
+                                            x["destLat"])),stringsAsFactors = F)
+      coordinates(points) <- c("lng","lat")
+      Lines(Line(points),ID=x["id"])
+    })
+    
+    flights_lines <- SpatialLinesDataFrame(SpatialLines(flights_lines), polyLinesSubset)
+    
+    
+  tempMap %>%
+      addPolylines(data=flights_lines, opacity = 0.5, color = "blue")#, weight = ~delayed_dep)
+  })
+
 } # server
-
-
-# Create Shiny object
-shinyApp(ui = ui, server = server)
