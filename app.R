@@ -10,9 +10,11 @@ library(airportr)
 library(shinyWidgets)
 library(geosphere)
 library(sp)
+library(shinyjs)
 
 # Define UI
-ui <- navbarPage(
+ui <- fluidPage(
+  useShinyjs(),
   theme = shinytheme("cerulean"),
   tags$head(
     tags$style(HTML(
@@ -27,54 +29,56 @@ ui <- navbarPage(
         }",
       "#main-title {
         font-size:20px;
-      }"
+      }",
+      "body {margin-left: -15px; margin-right: -15px}"
       ))
 
   ),
-  title = div("Airline Delay Webapp", id = "main-title"),
-  # tabsetPanel(
-    tabPanel("Vis 1",
+  navbarPage(
+    title = div("Airline Delay Webapp", id = "main-title"),
+    # tabsetPanel(
+      tabPanel("Vis 1",
+               sidebarLayout(
+                 sidebarPanel(
+                   selectInput("year", "Select year",
+                               choices = NULL,
+                               selected = ""),
+                   selectInput("month", "Select month",
+                               choices = NULL,
+                               selected = ""),
+                 ),
+                 mainPanel(
+                   textOutput("selected_year"),
+                   fluidRow(
+                     column(width = 12, plotOutput("selected_plot")),
+                     column(width = 6, plotOutput("selected_plot_arr")),
+                     column(width = 6, plotOutput("selected_plot_dep"))
+                   )
+                 )
+               )
+      ),
+
+    tabPanel("Vis 2",
              sidebarLayout(
                sidebarPanel(
-                 selectInput("year", "Select year",
+                 selectInput("origin", "Select origin",
                              choices = NULL,
                              selected = ""),
-                 selectInput("month", "Select month",
+                 selectInput("destination", "Select destination",
                              choices = NULL,
                              selected = ""),
+                 actionButton("submit_button", "Enter!", disabled = TRUE)
                ),
                mainPanel(
-                 textOutput("selected_year"),
-                 fluidRow(
-                   column(width = 12, plotOutput("selected_plot")),
-                   column(width = 6, plotOutput("selected_plot_arr")),
-                   column(width = 6, plotOutput("selected_plot_dep"))
-                 )
+                 textOutput("vis2_welcometext"),
+                 #display map on screen
+                 leafletOutput("locations") #locations is name of map
                )
              )
     ),
 
-  tabPanel("Vis 2",
-           sidebarLayout(
-             sidebarPanel(
-               selectInput("origin", "Select origin",
-                           choices = NULL,
-                           selected = ""),
-               selectInput("destination", "Select destination",
-                           choices = NULL,
-                           selected = ""),
-               actionButton("submit_button", "Enter!", disabled = TRUE)
-             ),
-             mainPanel(
-               textOutput("vis2_welcometext"),
-               #display map on screen
-               leafletOutput("locations") #locations is name of map
-             )
-           )
-  ),
-
-  tabPanel("Vis 3", "This is the page for the 3rd visualisation")
-
+    tabPanel("Vis 3", "This is the page for the 3rd visualisation")
+  )
 )
 
 # Define server function
@@ -95,7 +99,7 @@ server <- function(input, output) {
       paste0("Please select a year using the dropdown on the left panel")
     }
   })
-  
+
 
   filtered_data_year <- reactive({
     subset(data, Year == input$year)
@@ -170,72 +174,152 @@ server <- function(input, output) {
   ##vis2:
     list_unique_origins <- c("LAX", "SFO", "ATL")
     list_unique_dests <- c("LAX", "SFO", "ATL")
+
+    origin <- reactive(input$origin)
+    destination <- reactive(input$destination)
+    
+    output$vis2_welcometext <- renderText("Please select inputs on the left")
+    
+    reactive_text <- eventReactive(input$submit_button, {
+      paste(input$origin, input$destination)
+    })
     output$vis2_welcometext <- renderText({
-      if (input$origin == "" | input$destination == "") {
-        paste0("Please select from the origin and destination dropdowns on the left panel")
+      if (input$origin!= "" | input$destination !="") {
+        paste0("select input")
+      } else {
+        reactive_text()  
       }
     })
+    # observeEvent(input$submit_button, {
+    #   if (origin() != "" & destination() != "") {
+    #     print("inside")
+    #     output$vis2_welcometext <- renderText({paste("You have made the selection from", origin(), "to", destination())})
+    # 
+    #     # cascade <- read.csv("./cascade.csv")
+    #     # tempOrigin <- lapply(cascade$ORIGIN, airport_location)
+    #     # cascade$originLat <- sapply(tempOrigin, function(x) x$Latitude)
+    #     # cascade$originLng <- sapply(tempOrigin, function(x) x$Longitude)
+    #     #
+    #     # tempDest <- lapply(cascade$DEST, airport_location)
+    #     # cascade$destLat <- sapply(tempDest, function(x) x$Latitude)
+    #     # cascade$destLng <- sapply(tempDest, function(x) x$Longitude)
+    #     # cascade$markerColour <- c("blue")
+    #     # cascade$markerColour[1] = "red"
+    #     #
+    #     # cascade$markerColour2 <- c("green")
+    #     # markerColour2 <- cascade$markerColour2
+    #     #
+    #     # markerColour <- cascade$markerColour
+    #     #
+    #     # icons <- awesomeIcons(icon = 'ios-close',
+    #     #                       library = 'ion',
+    #     #                       markerColor =  markerColour)
+    #     # icons2 <- awesomeIcons(icon = 'ios-close',
+    #     #                        library = 'ion',
+    #     #                        markerColor =  markerColour2)
+    #     #
+    #     # greenSubset <- cascade %>% filter(cascade$DEST != "LAX" & cascade$DEST != "SFO")
+    #     # polyLinesSubset <- cascade %>% filter(cascade$DEST != "LAX")
+    #     #
+    #     # temp_locations <- renderLeaflet({
+    #     #   #setup an empty map
+    #     #   first_row_data <- gcIntermediate(c(cascade$originLng[1],cascade$originLat[1]), c(cascade$destLng[1],cascade$destLat[1]),
+    #     #                                    n=100,
+    #     #                                    addStartEnd=TRUE,
+    #     #                                    sp=TRUE)
+    #     #   locations <- leaflet(data=cascade)
+    #     #   map <- addTiles(locations)
+    #     #   tempMap <- addAwesomeMarkers(data = cascade, lat = ~originLat, lng = ~originLng,
+    #     #                                map = map, popup = ~ORIGIN, icon = icons) %>%
+    #     #     # addPolylines(lat = ~originLat, lng = ~originLng, color = "red", opacity = 0.5, weight = ~delayed_arr, label = paste("num delayed flights:", cascade$delayed_arr)) %>%
+    #     #     addPolylines(data = first_row_data, color = "red", opacity = 0.5, weight = cascade$delayed_arr[1], label = paste("num delayed flights:", cascade$delayed_arr[1])) %>%
+    #     #     addAwesomeMarkers(data = greenSubset, lat = ~destLat, lng = ~destLng, popup = ~DEST, icon = icons2)
+    #     #   # addPopups(lat = ~destLat, lng = ~destLng, popup =~DEST )
+    #     #
+    #     #   polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.))
+    #     #   flights_lines <- apply(polyLinesSubset,1,function(x){
+    #     #     points <- data.frame(lng=as.numeric(c(x["originLng"],
+    #     #                                           x["destLng"])),
+    #     #                          lat=as.numeric(c(x["originLat"],
+    #     #                                           x["destLat"])),stringsAsFactors = F)
+    #     #     coordinates(points) <- c("lng","lat")
+    #     #     Lines(Line(points),ID=x["id"])
+    #     #   })
+    #     #
+    #     #   flights_lines <- SpatialLinesDataFrame(SpatialLines(flights_lines), polyLinesSubset)
+    #     #
+    #     #
+    #     #   tempMap %>%
+    #     #     addPolylines(data=flights_lines, opacity = 0.5, color = "blue")#, weight = ~delayed_dep)
+    #     # })
+    # 
+    #   } else {
+    #     output$vis2_welcometext <- renderText({paste0("Please select from the origin and destination dropdowns on the left panel")})
+    # 
+    #     # temp_locations <- renderLeaflet(
+    #     #   NULL
+    #     # )
+    #     #
+    #   }
+    # })
+    # 
+    # # output$locations <- renderLeaflet({
+    # #   list <- button_triggered_event()
+    # #   list[[2]]
+    # # })
+    # 
+    # # observeEvent(input$submit_button, {
+    # #   print("hi")
+    # #   button_triggered_event()
+    # # })
+    # #
+    # 
+    # output$vis2_welcometext <- renderText({
+    #   if (input$origin == "" | input$destination == "") {
+    #     paste0("Please select from the origin and destination dropdowns on the left panel")
+    #   }
+    # })
     observe({
       updateSelectInput(inputId="origin", choices=c("",sort(unique(list_unique_origins))), selected="")
       updateSelectInput(inputId="destination", choices=c("",sort(unique(list_unique_dests))), selected="")
     })
-    # observeEvent(
-    cascade <- read.csv("./cascade.csv")
-    tempOrigin <- lapply(cascade$ORIGIN, airport_location)
-    cascade$originLat <- sapply(tempOrigin, function(x) x$Latitude)
-    cascade$originLng <- sapply(tempOrigin, function(x) x$Longitude)
 
-    tempDest <- lapply(cascade$DEST, airport_location)
-    cascade$destLat <- sapply(tempDest, function(x) x$Latitude)
-    cascade$destLng <- sapply(tempDest, function(x) x$Longitude)
-    cascade$markerColour <- c("blue")
-    cascade$markerColour[1] = "red"
-    
-    cascade$markerColour2 <- c("green")
-    markerColour2 <- cascade$markerColour2
-    
-    markerColour <- cascade$markerColour
-      
-    icons <- awesomeIcons(icon = 'ios-close',
-                          library = 'ion',
-                          markerColor =  markerColour)
-    icons2 <- awesomeIcons(icon = 'ios-close',
-                          library = 'ion',
-                          markerColor =  markerColour2)
-    
-    greenSubset <- cascade %>% filter(cascade$DEST != "LAX" & cascade$DEST != "SFO")
-    polyLinesSubset <- cascade %>% filter(cascade$DEST != "LAX")
-    
-    output$locations <- renderLeaflet({
-    #setup an empty map
-    first_row_data <- gcIntermediate(c(cascade$originLng[1],cascade$originLat[1]), c(cascade$destLng[1],cascade$destLat[1]),
-                                     n=100, 
-                                     addStartEnd=TRUE,
-                                     sp=TRUE)
-    locations <- leaflet(data=cascade)
-    map <- addTiles(locations)
-    tempMap <- addAwesomeMarkers(data = cascade, lat = ~originLat, lng = ~originLng,
-                     map = map, popup = ~ORIGIN, icon = icons) %>%
-      # addPolylines(lat = ~originLat, lng = ~originLng, color = "red", opacity = 0.5, weight = ~delayed_arr, label = paste("num delayed flights:", cascade$delayed_arr)) %>%
-      addPolylines(data = first_row_data, color = "red", opacity = 0.5, weight = cascade$delayed_arr[1], label = paste("num delayed flights:", cascade$delayed_arr[1])) %>%
-      addAwesomeMarkers(data = greenSubset, lat = ~destLat, lng = ~destLng, popup = ~DEST, icon = icons2)
-      # addPopups(lat = ~destLat, lng = ~destLng, popup =~DEST )
-    
-    polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.))
-    flights_lines <- apply(polyLinesSubset,1,function(x){
-      points <- data.frame(lng=as.numeric(c(x["originLng"], 
-                                            x["destLng"])),
-                           lat=as.numeric(c(x["originLat"], 
-                                            x["destLat"])),stringsAsFactors = F)
-      coordinates(points) <- c("lng","lat")
-      Lines(Line(points),ID=x["id"])
+    observeEvent(input$origin, {
+      selected_origin <- input$origin
+      destination_choices <- list_unique_dests
+      if (selected_origin != "") {
+        destination_choices <- list_unique_dests[list_unique_dests != selected_origin]
+      }
+      updateSelectInput(inputId = "destination", choices = destination_choices, selected = input$destination)
     })
-    
-    flights_lines <- SpatialLinesDataFrame(SpatialLines(flights_lines), polyLinesSubset)
-    
-    
-  tempMap %>%
-      addPolylines(data=flights_lines, opacity = 0.5, color = "blue")#, weight = ~delayed_dep)
-  })
+
+    observeEvent(input$destination, {
+      selected_destination <- input$destination
+      origin_choices <- list_unique_origins
+      if (selected_destination != "") {
+        origin_choices <- list_unique_origins[list_unique_origins != selected_destination]
+      }
+      updateSelectInput(inputId = "origin", choices = origin_choices, selected = input$origin)
+    })
+
+    observeEvent(c(input$origin, input$destination), {
+      if (input$origin != "" & input$destination != "") {
+        shinyjs::enable("submit_button")
+      } else {
+        shinyjs::disable("submit_button")
+      }
+    })
+
+
+
+    #cascade
+
+
+    #})
 
 } # server
+
+
+
+# Create Shiny object
+shinyApp(ui = ui, server = server)
