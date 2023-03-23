@@ -178,107 +178,87 @@ server <- function(input, output) {
     origin <- reactive(input$origin)
     destination <- reactive(input$destination)
     
-    output$vis2_welcometext <- renderText("Please select inputs on the left")
-    
     reactive_text <- eventReactive(input$submit_button, {
-      paste(input$origin, input$destination)
+      paste("You have selected", input$origin, "-->", input$destination)
     })
     output$vis2_welcometext <- renderText({
-      if (input$origin!= "" | input$destination !="") {
-        paste0("select input")
+      if (input$origin == "" || input$destination == "") {
+        paste0("select input from left")
+      } else if (input$submit_button == 0) {
+        paste0("Please press the enter button")
       } else {
-        reactive_text()  
+        reactive_text()
       }
     })
-    # observeEvent(input$submit_button, {
-    #   if (origin() != "" & destination() != "") {
-    #     print("inside")
-    #     output$vis2_welcometext <- renderText({paste("You have made the selection from", origin(), "to", destination())})
-    # 
-    #     # cascade <- read.csv("./cascade.csv")
-    #     # tempOrigin <- lapply(cascade$ORIGIN, airport_location)
-    #     # cascade$originLat <- sapply(tempOrigin, function(x) x$Latitude)
-    #     # cascade$originLng <- sapply(tempOrigin, function(x) x$Longitude)
-    #     #
-    #     # tempDest <- lapply(cascade$DEST, airport_location)
-    #     # cascade$destLat <- sapply(tempDest, function(x) x$Latitude)
-    #     # cascade$destLng <- sapply(tempDest, function(x) x$Longitude)
-    #     # cascade$markerColour <- c("blue")
-    #     # cascade$markerColour[1] = "red"
-    #     #
-    #     # cascade$markerColour2 <- c("green")
-    #     # markerColour2 <- cascade$markerColour2
-    #     #
-    #     # markerColour <- cascade$markerColour
-    #     #
-    #     # icons <- awesomeIcons(icon = 'ios-close',
-    #     #                       library = 'ion',
-    #     #                       markerColor =  markerColour)
-    #     # icons2 <- awesomeIcons(icon = 'ios-close',
-    #     #                        library = 'ion',
-    #     #                        markerColor =  markerColour2)
-    #     #
-    #     # greenSubset <- cascade %>% filter(cascade$DEST != "LAX" & cascade$DEST != "SFO")
-    #     # polyLinesSubset <- cascade %>% filter(cascade$DEST != "LAX")
-    #     #
-    #     # temp_locations <- renderLeaflet({
-    #     #   #setup an empty map
-    #     #   first_row_data <- gcIntermediate(c(cascade$originLng[1],cascade$originLat[1]), c(cascade$destLng[1],cascade$destLat[1]),
-    #     #                                    n=100,
-    #     #                                    addStartEnd=TRUE,
-    #     #                                    sp=TRUE)
-    #     #   locations <- leaflet(data=cascade)
-    #     #   map <- addTiles(locations)
-    #     #   tempMap <- addAwesomeMarkers(data = cascade, lat = ~originLat, lng = ~originLng,
-    #     #                                map = map, popup = ~ORIGIN, icon = icons) %>%
-    #     #     # addPolylines(lat = ~originLat, lng = ~originLng, color = "red", opacity = 0.5, weight = ~delayed_arr, label = paste("num delayed flights:", cascade$delayed_arr)) %>%
-    #     #     addPolylines(data = first_row_data, color = "red", opacity = 0.5, weight = cascade$delayed_arr[1], label = paste("num delayed flights:", cascade$delayed_arr[1])) %>%
-    #     #     addAwesomeMarkers(data = greenSubset, lat = ~destLat, lng = ~destLng, popup = ~DEST, icon = icons2)
-    #     #   # addPopups(lat = ~destLat, lng = ~destLng, popup =~DEST )
-    #     #
-    #     #   polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.))
-    #     #   flights_lines <- apply(polyLinesSubset,1,function(x){
-    #     #     points <- data.frame(lng=as.numeric(c(x["originLng"],
-    #     #                                           x["destLng"])),
-    #     #                          lat=as.numeric(c(x["originLat"],
-    #     #                                           x["destLat"])),stringsAsFactors = F)
-    #     #     coordinates(points) <- c("lng","lat")
-    #     #     Lines(Line(points),ID=x["id"])
-    #     #   })
-    #     #
-    #     #   flights_lines <- SpatialLinesDataFrame(SpatialLines(flights_lines), polyLinesSubset)
-    #     #
-    #     #
-    #     #   tempMap %>%
-    #     #     addPolylines(data=flights_lines, opacity = 0.5, color = "blue")#, weight = ~delayed_dep)
-    #     # })
-    # 
-    #   } else {
-    #     output$vis2_welcometext <- renderText({paste0("Please select from the origin and destination dropdowns on the left panel")})
-    # 
-    #     # temp_locations <- renderLeaflet(
-    #     #   NULL
-    #     # )
-    #     #
-    #   }
-    # })
-    # 
-    # # output$locations <- renderLeaflet({
-    # #   list <- button_triggered_event()
-    # #   list[[2]]
-    # # })
-    # 
-    # # observeEvent(input$submit_button, {
-    # #   print("hi")
-    # #   button_triggered_event()
-    # # })
-    # #
-    # 
-    # output$vis2_welcometext <- renderText({
-    #   if (input$origin == "" | input$destination == "") {
-    #     paste0("Please select from the origin and destination dropdowns on the left panel")
-    #   }
-    # })
+    
+    reactive_leaflet <- eventReactive(input$submit_button, {
+      cascade <- read.csv("./cascade.csv")
+      tempOrigin <- lapply(cascade$ORIGIN, airport_location)
+      cascade$originLat <- sapply(tempOrigin, function(x) x$Latitude)
+      cascade$originLng <- sapply(tempOrigin, function(x) x$Longitude)
+
+      tempDest <- lapply(cascade$DEST, airport_location)
+      cascade$destLat <- sapply(tempDest, function(x) x$Latitude)
+      cascade$destLng <- sapply(tempDest, function(x) x$Longitude)
+      cascade$markerColour <- c("blue")
+      cascade$markerColour[1] = "red"
+
+      cascade$markerColour2 <- c("green")
+      markerColour2 <- cascade$markerColour2
+
+      markerColour <- cascade$markerColour
+
+      icons <- awesomeIcons(icon = 'ios-close',
+                            library = 'ion',
+                            markerColor =  markerColour)
+      icons2 <- awesomeIcons(icon = 'ios-close',
+                             library = 'ion',
+                             markerColor =  markerColour2)
+
+      greenSubset <- cascade %>% filter(cascade$DEST != "LAX" & cascade$DEST != "SFO")
+      polyLinesSubset <- cascade %>% filter(cascade$DEST != "LAX")
+
+      
+      #setup an empty map
+      first_row_data <- gcIntermediate(c(cascade$originLng[1],cascade$originLat[1]), c(cascade$destLng[1],cascade$destLat[1]),
+                                       n=100,
+                                       addStartEnd=TRUE,
+                                       sp=TRUE)
+      locations <- leaflet(data=cascade)
+      map <- addTiles(locations)
+      tempMap <- addAwesomeMarkers(data = cascade, lat = ~originLat, lng = ~originLng,
+                                   map = map, popup = ~ORIGIN, icon = icons) %>%
+        # addPolylines(lat = ~originLat, lng = ~originLng, color = "red", opacity = 0.5, weight = ~delayed_arr, label = paste("num delayed flights:", cascade$delayed_arr)) %>%
+        addPolylines(data = first_row_data, color = "red", opacity = 0.5, weight = cascade$delayed_arr[1], label = paste("num delayed flights:", cascade$delayed_arr[1])) %>%
+        addAwesomeMarkers(data = greenSubset, lat = ~destLat, lng = ~destLng, popup = ~DEST, icon = icons2)
+        # addPopups(lat = ~destLat, lng = ~destLng, popup =~DEST )
+
+      polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.))
+      flights_lines <- apply(polyLinesSubset,1,function(x){
+        points <- data.frame(lng=as.numeric(c(x["originLng"],
+                                              x["destLng"])),
+                             lat=as.numeric(c(x["originLat"],
+                                              x["destLat"])),stringsAsFactors = F)
+        coordinates(points) <- c("lng","lat")
+        Lines(Line(points),ID=x["id"])
+      })
+
+      flights_lines <- SpatialLinesDataFrame(SpatialLines(flights_lines), polyLinesSubset)
+
+
+      tempMap %>%
+        addPolylines(data=flights_lines, opacity = 0.5, color = "blue")#, weight = ~delayed_dep)
+
+    })
+  
+    output$locations <- renderLeaflet({
+      if(input$submit_button == 0) {
+        NULL
+      } else {
+        reactive_leaflet()
+      }
+    })
+    
     observe({
       updateSelectInput(inputId="origin", choices=c("",sort(unique(list_unique_origins))), selected="")
       updateSelectInput(inputId="destination", choices=c("",sort(unique(list_unique_dests))), selected="")
@@ -309,13 +289,6 @@ server <- function(input, output) {
         shinyjs::disable("submit_button")
       }
     })
-
-
-
-    #cascade
-
-
-    #})
 
 } # server
 
