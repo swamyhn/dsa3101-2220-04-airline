@@ -9,6 +9,7 @@ Steps taken to create mysql database image:
     - Under "Group or user names", click on "Edit" and then "Add".
     - Under "Enter the object names to select", type "Users" and select "Check names".
     - Click "OK" to close all dialog boxes.
+- Open the configuration file, my.ini, and set sql-mode="".
 - Login to mysql in terminal, SET GLOBAL local_infile = true;
 - Run import_to_mysql.py after making minor changes to the path in the script.
 
@@ -31,6 +32,12 @@ Steps taken to create mysql database image:
     docker build -t mysqldb .
 
 5. Add image to dockerhub
+    - Login to dockerhub.
+    - Tag the image using the following command:
+        docker tag mysqldb swamyhn/mysqldb
+    - Upload image to dockerhub by running:
+        docker pull swamhyn/mysqldb
+
 
 
 
