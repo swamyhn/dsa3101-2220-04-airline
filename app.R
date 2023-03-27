@@ -11,6 +11,7 @@ library(shinyWidgets)
 library(geosphere)
 library(sp)
 library(shinyjs)
+library(htmltools)
 
 # Define UI
 ui <- fluidPage(
@@ -228,26 +229,34 @@ server <- function(input, output) {
       map <- addTiles(locations)
       tempMap <- addAwesomeMarkers(data = cascade, lat = ~originLat, lng = ~originLng,
                                    map = map, popup = ~ORIGIN, icon = icons) %>%
-        # addPolylines(lat = ~originLat, lng = ~originLng, color = "red", opacity = 0.5, weight = ~delayed_arr, label = paste("num delayed flights:", cascade$delayed_arr)) %>%
-        addPolylines(data = first_row_data, color = "red", opacity = 0.5, weight = cascade$delayed_arr[1], label = paste("num delayed flights:", cascade$delayed_arr[1])) %>%
-        addAwesomeMarkers(data = greenSubset, lat = ~destLat, lng = ~destLng, popup = ~DEST, icon = icons2)
-        # addPopups(lat = ~destLat, lng = ~destLng, popup =~DEST )
+        addPolylines(data = first_row_data, color = "red", opacity = 0.5, weight = cascade$delayed_arr[1], label = HTML("<span style='font-size:17px'> <div><strong>", cascade$ORIGIN[1], "->", cascade$DEST[1], "</strong></div>", "num delayed arr:", cascade$delayed_arr[1], "</span>")) %>%
+        addAwesomeMarkers(data = greenSubset, lat = ~destLat, lng = ~destLng, popup = ~DEST, icon = icons2) %>% 
+        addPopups(lat = ~destLat, lng = ~destLng, popup =~DEST )
 
-      polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.))
+      polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.)) %>%
+        mutate(label = paste("<span style='font-size:17px'><div><strong>", polyLinesSubset$ORIGIN, "->", polyLinesSubset$DEST, "</strong></div>", "num delayed dep:",
+                              polyLinesSubset$delayed_dep, "</span>"))
+        
+      # label <- paste0("<div><strong>Num Delayed Flights:</strong>", 
+      #                 polyLinesSubset$delayed_dep, "</div>")
       flights_lines <- apply(polyLinesSubset,1,function(x){
         points <- data.frame(lng=as.numeric(c(x["originLng"],
                                               x["destLng"])),
                              lat=as.numeric(c(x["originLat"],
                                               x["destLat"])),stringsAsFactors = F)
         coordinates(points) <- c("lng","lat")
+        # label <- HTML("<strong>Num Delayed Flights:</strong> ", x["delayed_dep"])
         Lines(Line(points),ID=x["id"])
       })
 
       flights_lines <- SpatialLinesDataFrame(SpatialLines(flights_lines), polyLinesSubset)
 
-
+      polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.))
+      # temp <- sapply(flights_lines, function(x) HTML("<div>", 
+                                                     # x$label, "<strong>test</strong></div>"))
+      
       tempMap %>%
-        addPolylines(data=flights_lines, opacity = 0.5, color = "blue")#, weight = ~delayed_dep)
+        addPolylines(data=flights_lines, opacity = 0.5, color = "blue", weight = ~delayed_dep, label= lapply(flights_lines$label, HTML))
 
     })
   
