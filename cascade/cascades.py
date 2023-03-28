@@ -21,12 +21,9 @@ class Cascade:
         final = pd.concat([most_dep_delay, self.data[(self.data["MONTH"] == month) & (self.data["DAY_OF_MONTH"] == day) & (self.data["YEAR"] == year) & (self.data["ORIGIN"] == dest)]])
         return final
 
-airports = ["ATL", "ORD", "DFW", "DEN", "LAX", "PHX", "IAH", "SFO", "LAS", "CLT"]
-years = [1989, 1990, 2000, 2001, 2006, 2007]
-model = Cascade(all_pairs, years, airports)
+model = Cascade(all_pairs)
 
 app = Flask(__name__)
-pred = model.query("ATL", "LAX", 2007)
 
 @app.route("/")
 def app_page():
