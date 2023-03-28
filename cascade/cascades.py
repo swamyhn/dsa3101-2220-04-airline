@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file, render_template
+from flask import Flask, request
 import joblib
 import numpy as np
 import pandas as pd
@@ -35,4 +35,4 @@ def query():
     dest = request.args.get('dest')
     year = int(request.args.get('year'))
     pred = model.query(origin, dest, year)
-    return jsonify(pred.to_json())
+    return pred.to_json(orient = "records")
