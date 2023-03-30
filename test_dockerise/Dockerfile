@@ -12,7 +12,6 @@ COPY main.py main.py
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
-# RUN python model.py
 
 ENV FLASK_APP app
 EXPOSE 5000
