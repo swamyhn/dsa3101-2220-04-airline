@@ -12,6 +12,7 @@ library(geosphere)
 library(sp)
 library(shinyjs)
 library(htmltools)
+library(leaflegend)
 
 # Define UI
 ui <- fluidPage(
@@ -68,14 +69,19 @@ ui <- fluidPage(
                  selectInput("destination", "Select destination",
                              choices = NULL,
                              selected = ""),
-                 actionButton("submit_button", "Enter!", disabled = TRUE)
+                 actionButton("submit_button", "Enter!", disabled = TRUE, icon = icon("fas fa-plane", lib="font-awesome", style="color:black;"))
                ),
                mainPanel(
                  textOutput("vis2_welcometext"),
                  #display map on screen
-                 leafletOutput("locations") #locations is name of map
+                 leafletOutput("locations"), #locations is name of map
+                 br(),
+                 # uiOutput("legend_text"),
+                 # tags$img(src = paste0("data:image/svg+xml;utf8,", 
+                 #                       URLencode(as.character(addAwesomeMarkers(icon = icons)))), 
+                 #          height = 50, width = 50)
                )
-             )
+             )#, icon = icon("fas fa-house", lib="font-awesome")
     ),
 
     tabPanel("Vis 3", "This is the page for the 3rd visualisation")
@@ -84,7 +90,6 @@ ui <- fluidPage(
 
 # Define server function
 server <- function(input, output) {
-
   month_order <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
   data <- read.csv("./unbinned_delay_count.csv")
   data$Month <- factor(data$Month, levels = month_order)
@@ -209,13 +214,47 @@ server <- function(input, output) {
 
       markerColour <- cascade$markerColour
 
-      icons <- awesomeIcons(icon = 'ios-close',
+      icons <- makeAwesomeIcon(icon = 'ios-close',
                             library = 'ion',
                             markerColor =  markerColour)
-      icons2 <- awesomeIcons(icon = 'ios-close',
+      icons2 <- makeAwesomeIcon(icon = 'ios-close',
                              library = 'ion',
                              markerColor =  markerColour2)
 
+      iconSet <- awesomeIconList(
+        origin = makeAwesomeIcon(
+          icon = 'ios-close',
+          library = 'ion',
+          markerColor = 'red'
+        ),
+        destination = icons,
+        `cascade dests` = icons2
+      )
+      
+      pub = makeAwesomeIcon(
+        icon = 'beer',
+        library = 'fa',
+        iconColor = 'gold',
+        markerColor = 'red',
+        iconRotate = 10
+      )
+      cafe = makeAwesomeIcon(
+        icon = 'coffee',
+        library = 'ion',
+        iconColor = '#000000',
+        markerColor = 'blue',
+        squareMarker = TRUE
+      )
+      restaurant = makeAwesomeIcon(
+        icon = 'cutlery',
+        library = 'glyphicon',
+        iconColor = 'rgb(192, 255, 0)',
+        markerColor = 'darkpurple',
+        spin = TRUE,
+        squareMarker = FALSE
+      )
+
+      
       greenSubset <- cascade %>% filter(cascade$DEST != "LAX" & cascade$DEST != "SFO")
       polyLinesSubset <- cascade %>% filter(cascade$DEST != "LAX")
 
@@ -256,7 +295,14 @@ server <- function(input, output) {
                                                      # x$label, "<strong>test</strong></div>"))
       
       tempMap %>%
-        addPolylines(data=flights_lines, opacity = 0.5, color = "blue", weight = ~delayed_dep, label= lapply(flights_lines$label, HTML))
+        addPolylines(data=flights_lines, opacity = 0.5, color = "blue", weight = ~delayed_dep, label= lapply(flights_lines$label, HTML)) %>%
+        addLegendAwesomeIcon(iconSet = iconSet, position = "bottomright", title ="marker legend") %>%
+        addLegend(
+          position = 'topright',
+          colors = c("red","blue"),
+          labels = c("delayed arr to dest", "delayed dep (cascaded)"), opacity = 0.5,
+          title = 'line colour legend'
+        )
 
     })
   

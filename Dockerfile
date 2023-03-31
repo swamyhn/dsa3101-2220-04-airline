@@ -24,7 +24,7 @@ WORKDIR /app
 COPY . .
 
 # install packages
-RUN R -e 'install.packages(pkgs=c("random", "shiny", "shinythemes", "ggplot2", "tidyverse", "plotly", "dplyr", "leaflet", "airportr","shinyWidgets", "geosphere", "sp", "shinyjs"))'
+RUN R -e 'install.packages(pkgs=c("random", "shiny", "shinythemes", "ggplot2", "tidyverse", "plotly", "dplyr", "leaflet", "airportr","shinyWidgets", "geosphere", "sp", "shinyjs", "htmltools", "leaflegend"))'
 
 #expose port
 EXPOSE 3838
