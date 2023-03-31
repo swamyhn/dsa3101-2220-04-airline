@@ -221,6 +221,16 @@ server <- function(input, output) {
                              library = 'ion',
                              markerColor =  markerColour2)
 
+      iconSet <- awesomeIconList(
+        origin = makeAwesomeIcon(
+          icon = 'ios-close',
+          library = 'ion',
+          markerColor = 'red'
+        ),
+        destination = icons,
+        `cascade dests` = icons2
+      )
+
       
       greenSubset <- cascade %>% filter(cascade$DEST != "LAX" & cascade$DEST != "SFO")
       polyLinesSubset <- cascade %>% filter(cascade$DEST != "LAX")
