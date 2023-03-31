@@ -10,7 +10,7 @@
     - Under "Enter the object names to select", type "Users" and select "Check names"
     - Click "OK" to close all dialog boxes
 - Open the configuration file, my.ini, and set sql-mode=""
-    - This file is usually foung in the directory 'C:\ProgramData\MySQL\MySQL Server 8.0'
+    - This file is usually found in the directory 'C:\ProgramData\MySQL\MySQL Server 8.0'
     - Open Notepad and run as administrator
     - Copy paste contents of my.ini onto a new text file on Notepad and make the required changes
     - Save the new file with the same name and extension my.ini, overwriting the old my.ini
