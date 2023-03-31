@@ -221,39 +221,6 @@ server <- function(input, output) {
                              library = 'ion',
                              markerColor =  markerColour2)
 
-      iconSet <- awesomeIconList(
-        origin = makeAwesomeIcon(
-          icon = 'ios-close',
-          library = 'ion',
-          markerColor = 'red'
-        ),
-        destination = icons,
-        `cascade dests` = icons2
-      )
-      
-      pub = makeAwesomeIcon(
-        icon = 'beer',
-        library = 'fa',
-        iconColor = 'gold',
-        markerColor = 'red',
-        iconRotate = 10
-      )
-      cafe = makeAwesomeIcon(
-        icon = 'coffee',
-        library = 'ion',
-        iconColor = '#000000',
-        markerColor = 'blue',
-        squareMarker = TRUE
-      )
-      restaurant = makeAwesomeIcon(
-        icon = 'cutlery',
-        library = 'glyphicon',
-        iconColor = 'rgb(192, 255, 0)',
-        markerColor = 'darkpurple',
-        spin = TRUE,
-        squareMarker = FALSE
-      )
-
       
       greenSubset <- cascade %>% filter(cascade$DEST != "LAX" & cascade$DEST != "SFO")
       polyLinesSubset <- cascade %>% filter(cascade$DEST != "LAX")
