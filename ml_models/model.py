@@ -128,7 +128,8 @@ def create_dt_arr_model(result, year):
     rus = RandomUnderSampler(random_state=42)
     X_resampled, y_resampled = rus.fit_resample(arr_X, arr_y)
 
-    arr_leaf_dic = {'1989': 3, '1990': 7, '2000': 7, '2001': 3, '2006': 3, '2007': 4}
+    #Maximum number of leaf nodes precomputed using sklearn's GridSearchCV
+    arr_leaf_dic = {'1989': 3, '1990': 3, '2000': 7, '2001': 3, '2006': 6, '2007': 6}
 
     dt_arr = DecisionTreeClassifier(max_leaf_nodes = arr_leaf_dic[year])
     dt_arr.fit(X_resampled, y_resampled)
@@ -176,8 +177,9 @@ def create_dt_dep_model(result, year):
 
     rus = RandomUnderSampler(random_state=42)
     X_resampled, y_resampled = rus.fit_resample(dep_X, dep_y)
-
-    dep_leaf_dic = {'1989': 3, '1990': 3, '2000': 7, '2001': 6, '2006': 3, '2007': 4}
+    
+    #Maximum number of leaf nodes precomputed using sklearn's GridSearchCV
+    dep_leaf_dic = {'1989': 3, '1990': 7, '2000': 2, '2001': 2, '2006': 7, '2007': 3}
 
     dt_dep = DecisionTreeClassifier(max_leaf_nodes = dep_leaf_dic[year])
     dt_dep.fit(X_resampled, y_resampled)
