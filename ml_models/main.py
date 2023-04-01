@@ -2,10 +2,11 @@ import pandas as pd
 import database
 import model
 
-def load_and_train(mode, ml_model):
+def load_and_train(mode):
 
-    yr = mode[-4:]
+    yr = mode[7:11]
     dir = mode[3:6]
+    ml_model = mode[:2]
 
     try:
         db = database.connect_db()
@@ -20,7 +21,10 @@ def load_and_train(mode, ml_model):
             result = cursor.fetchall()
             df = pd.DataFrame(result, columns=[desc[0] for desc in cursor.description])
             if ml_model == 'lm':
-                myModel = model.create_lm_arr_model(df, yr)
+                std = mode[-1]
+                if std not in ['T', 'F']:
+                    raise Exception('Invalid input for standardisation condition')
+                myModel = model.create_lm_arr_model(df, yr, std)
                 print('---Successfully created lm model---')
             elif ml_model == 'dt':
                 myModel = model.create_dt_arr_model(df, yr)
@@ -33,7 +37,8 @@ def load_and_train(mode, ml_model):
             result = cursor.fetchall()
             df = pd.DataFrame(result, columns=[desc[0] for desc in cursor.description])
             if ml_model == 'lm':
-                myModel = model.create_lm_dep_model(df, yr) 
+                std = mode[-1]
+                myModel = model.create_lm_dep_model(df, yr, std) 
                 print('---Successfully created lm model---')
             elif ml_model == 'dt':
                 myModel = model.create_dt_dep_model(df, yr) 
