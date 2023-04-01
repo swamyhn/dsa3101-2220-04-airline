@@ -1,0 +1,27 @@
+version: "1.0"
+services:
+  frontend-web:
+    build: ./frontend
+    ports:
+      - "8567:3838"
+    depends_on:
+      - backend_cascade
+      - backend_ml_models
+    volumes:
+      - ./frontend:/app
+  
+  backend_cascade:
+    build: ./cascade
+    ports: 
+      - "5001:5000"
+
+  backend_ml_models:
+    build: ./ml_models
+    ports:
+      - "1000:5000"
+    restart: always
+    
+  mysql:
+    image: "swamyhn/mysqldb:latest"
+    ports:
+      - "5432:3306"
