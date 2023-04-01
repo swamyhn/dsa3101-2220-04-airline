@@ -13,6 +13,18 @@ library(sp)
 library(shinyjs)
 library(htmltools)
 library(leaflegend)
+library(httr)
+library(jsonlite)
+
+writeup_summary <- "<li>Our app visualises air travel delays from flights across the years 1989 - 1990, 2000 - 2001 and 2006 - 2007.</li><li>Visualisations 1, 2 and 3 are meant to help ease visualisations of flight delays over such years and would help to give different insights.</li>"
+writeup_motivation <- "<li>There were several important events that took place from 1987 to 2012 which had a significant impact on the aviation industry of the USA. Some of the most notable ones are: </li><div style='margin-top:9px;'><ol>
+<div id='motivation'><em><li>Gulf War (1990-1991):</li></em><ul><li> The Gulf War led to a surge in air travel demand as military personnel and their families traveled to and from the region. Airlines increased their capacity to meet the demand, leading to a significant increase in profits for the industry.</ul></li></div>
+<div id='motivation'><em><li>September 11 attacks (2001):</li></em><ul><li> The terrorist attacks on September 11, 2001, had a profound impact on the aviation industry, leading to increased security measures and changes in the way airlines operate. The attacks resulted in a significant decline in air travel demand, leading to financial losses for the industry.</ul></li></div>
+<div id='motivation'><em><li>Global Financial Crisis (2007-2008):</li></em><ul><li> The global financial crisis had a significant impact on the aviation industry, leading to a decline in air travel demand and financial losses for airlines. Many airlines were forced to cut costs, reduce capacity, and lay off employees to stay afloat.</ul></li></div></div></ol>"
+
+vis1_writeup <- "<ul><li>This visualisation mainly shows monthly aggregated data for a chose year. To go further in the analysis, a month within the year can be chosen to break the visualisations down into departure delay and arrival delay.</li><li>Inputs: <ul><li>Year</li><li>Month</li></ul></li></ul>"
+vis2_writeup <- "<ul><li>vis2 writeup</li></ul>"
+vis3_writeup <- "<ul><li>vis3 writeup</li></ul>"
 
 # Define UI
 ui <- fluidPage(
@@ -32,12 +44,27 @@ ui <- fluidPage(
       "#main-title {
         font-size:20px;
       }",
-      "body {margin-left: -15px; margin-right: -15px}"
+      "body {margin-left: -15px; margin-right: -15px}",
+      "h1 {margin-top: 0px;}",
+      "li {margin-bottom:3px; font-size:16px;}",
+      "#motivation {margin-bottom:10px;}"
+      
       ))
 
   ),
   navbarPage(
-    title = div("Airline Delay Webapp", id = "main-title"),
+    title = div(id = "main-title", "Airline Delay Webapp"),
+    tabPanel("Home",
+             HTML(paste('<div style="padding: 10px 20px"><h1>Welcome to the Airline Delay Webapp!</h1>
+             <h3> Introduction: </h3>
+              <div  style="display: flex; flex-direction: column; align-items: left; font-size:16px;">', writeup_summary,
+              '</div>', '<h3> Motivation of Selected Timeframe: </h3>', writeup_motivation, '<h3> Visualisations Explained: </h3>', '<ol>
+              <li style="font-size:20px;" id="motivation"> Visualisation 1: <div style="font-size: 16px;">', vis1_writeup, '</div> </li>
+              <li style="font-size:20px;" id="motivation"> Visualisation 2: <div style="font-size: 16px;">', vis2_writeup, '</div> </li>
+              <li style="font-size:20px;" id="motivation"> Visualisation 3: <div style="font-size: 16px;">', vis3_writeup, '</div> </li>
+              </ol>', '<h3> How to use app: </h3>', '</div>', sep = '')
+             )
+    ),
     # tabsetPanel(
       tabPanel("Vis 1",
                sidebarLayout(
@@ -50,7 +77,7 @@ ui <- fluidPage(
                                selected = ""),
                  ),
                  mainPanel(
-                   textOutput("selected_year"),
+                   htmlOutput("selected_year"),
                    fluidRow(
                      column(width = 12, plotOutput("selected_plot")),
                      column(width = 6, plotOutput("selected_plot_arr")),
@@ -69,10 +96,13 @@ ui <- fluidPage(
                  selectInput("destination", "Select destination",
                              choices = NULL,
                              selected = ""),
+                 selectInput("year2", "Select year",
+                             choices = NULL,
+                             selected = ""),
                  actionButton("submit_button", "Enter!", disabled = TRUE, icon = icon("fas fa-plane", lib="font-awesome", style="color:black;"))
                ),
                mainPanel(
-                 textOutput("vis2_welcometext"),
+                 htmlOutput("vis2_welcometext"),
                  #display map on screen
                  leafletOutput("locations"), #locations is name of map
                  br(),
@@ -178,17 +208,31 @@ server <- function(input, output) {
 
 
   ##vis2:
-    list_unique_origins <- c("LAX", "SFO", "ATL")
-    list_unique_dests <- c("LAX", "SFO", "ATL")
+    url1 <- "http://backend_cascade:5000/query?origin=" # + origin
+    url2 <- "&dest=" # + destination
+    url3 <- "&year=" # + year
+    list_unique_origins <- c('ATL', 'ORD', 'DFW', 'LAX', 'PHX', 'DEN', 'IAH', 'LAS', 'DTW', 'STL')
+    list_unique_dests <-  c('ATL', 'ORD', 'DFW', 'LAX', 'PHX', 'DEN', 'IAH', 'LAS', 'DTW', 'STL')
+    list_year2 <- as.character(seq(1987, 2012))
 
-    origin <- reactive(input$origin)
-    destination <- reactive(input$destination)
+    # origin <- reactive(input$origin)
+    # destination <- reactive(input$destination)
+    # year2 <- reactive(input$year2)
+    
+    dat <- reactiveVal(NULL)
     
     reactive_text <- eventReactive(input$submit_button, {
-      paste("You have selected", input$origin, "-->", input$destination)
+      cascade_data <- dat()
+      if (nrow(cascade_data) == 0) {
+        HTML("<div> You have selected", input$origin, "-->", input$destination, "in Year", input$year2,
+             "<br></br>", "However, the chosen inputs has 0 flights recorded. </div>")
+      } else {
+        paste("You have selected", input$origin, "-->", input$destination, "in Year", input$year2)  
+      }
     })
-    output$vis2_welcometext <- renderText({
-      if (input$origin == "" || input$destination == "") {
+    
+    output$vis2_welcometext <- renderUI({
+      if (input$origin == "" || input$destination == "" || input$year2 == "") {
         paste0("select input from left")
       } else if (input$submit_button == 0) {
         paste0("Please press the enter button")
@@ -197,8 +241,23 @@ server <- function(input, output) {
       }
     })
     
+    observeEvent(input$submit_button, {
+      response <- GET(paste0(url1, input$origin, url2, input$destination, url3, input$year2))
+      content <- content(response, as ='text')
+      json_content <- fromJSON(content)
+      df <- as.data.frame(json_content)
+      dat(df)
+    })
+      
+    
     reactive_leaflet <- eventReactive(input$submit_button, {
-      cascade <- read.csv("./cascade.csv")
+      cascade <- dat()
+      if(nrow(cascade) == 0) {
+        return (NULL)
+      }
+      
+      cascade <- cascade %>% filter(row_number() == 1 | delayed_dep > 0 & row_number() > 1)
+      
       tempOrigin <- lapply(cascade$ORIGIN, airport_location)
       cascade$originLat <- sapply(tempOrigin, function(x) x$Latitude)
       cascade$originLng <- sapply(tempOrigin, function(x) x$Longitude)
@@ -221,6 +280,7 @@ server <- function(input, output) {
                              library = 'ion',
                              markerColor =  markerColour2)
 
+      
       iconSet <- awesomeIconList(
         origin = makeAwesomeIcon(
           icon = 'ios-close',
@@ -231,29 +291,32 @@ server <- function(input, output) {
         `cascade dests` = icons2
       )
 
-      
-      greenSubset <- cascade %>% filter(cascade$DEST != "LAX" & cascade$DEST != "SFO")
-      polyLinesSubset <- cascade %>% filter(cascade$DEST != "LAX")
 
-      
+      greenSubset <- cascade %>% filter(cascade$DEST != input$origin & cascade$DEST != input$destination) %>% filter(delayed_dep > 0)
+      polyLinesSubset <- cascade %>% filter(cascade$DEST != input$origin)
+
+
       #setup an empty map
       first_row_data <- gcIntermediate(c(cascade$originLng[1],cascade$originLat[1]), c(cascade$destLng[1],cascade$destLat[1]),
                                        n=100,
                                        addStartEnd=TRUE,
                                        sp=TRUE)
+      first_row_list <- cascade[1,]
       locations <- leaflet(data=cascade)
       map <- addTiles(locations)
       tempMap <- addAwesomeMarkers(data = cascade, lat = ~originLat, lng = ~originLng,
                                    map = map, popup = ~ORIGIN, icon = icons) %>%
         addPolylines(data = first_row_data, color = "red", opacity = 0.5, weight = cascade$delayed_arr[1], label = HTML("<span style='font-size:17px'> <div><strong>", cascade$ORIGIN[1], "->", cascade$DEST[1], "</strong></div>", "num delayed arr:", cascade$delayed_arr[1], "</span>")) %>%
-        addAwesomeMarkers(data = greenSubset, lat = ~destLat, lng = ~destLng, popup = ~DEST, icon = icons2) %>% 
-        addPopups(lat = ~destLat, lng = ~destLng, popup =~DEST )
+        addAwesomeMarkers(data = greenSubset, lat = ~destLat, lng = ~destLng, popup = ~DEST, icon = icons2) %>%
+        addPopups(data = first_row_list, lat = ~destLat, lng = ~destLng, popup =~DEST) %>%
+        addPopups(data = first_row_list, lat = ~originLat, lng = ~originLng, popup =~ORIGIN) %>%
+        addPopups(data = greenSubset, lat = ~destLat, lng = ~destLng, popup =~DEST)
 
       polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.)) %>%
         mutate(label = paste("<span style='font-size:17px'><div><strong>", polyLinesSubset$ORIGIN, "->", polyLinesSubset$DEST, "</strong></div>", "num delayed dep:",
                               polyLinesSubset$delayed_dep, "</span>"))
-        
-      # label <- paste0("<div><strong>Num Delayed Flights:</strong>", 
+
+      # label <- paste0("<div><strong>Num Delayed Flights:</strong>",
       #                 polyLinesSubset$delayed_dep, "</div>")
       flights_lines <- apply(polyLinesSubset,1,function(x){
         points <- data.frame(lng=as.numeric(c(x["originLng"],
@@ -268,9 +331,8 @@ server <- function(input, output) {
       flights_lines <- SpatialLinesDataFrame(SpatialLines(flights_lines), polyLinesSubset)
 
       polyLinesSubset <- polyLinesSubset %>% mutate(id = row.names(.))
-      # temp <- sapply(flights_lines, function(x) HTML("<div>", 
+      # temp <- sapply(flights_lines, function(x) HTML("<div>",
                                                      # x$label, "<strong>test</strong></div>"))
-      
       tempMap %>%
         addPolylines(data=flights_lines, opacity = 0.5, color = "blue", weight = ~delayed_dep, label= lapply(flights_lines$label, HTML)) %>%
         addLegendAwesomeIcon(iconSet = iconSet, position = "bottomright", title ="marker legend") %>%
@@ -282,7 +344,7 @@ server <- function(input, output) {
         )
 
     })
-  
+
     output$locations <- renderLeaflet({
       if(input$submit_button == 0) {
         NULL
@@ -292,8 +354,9 @@ server <- function(input, output) {
     })
     
     observe({
-      updateSelectInput(inputId="origin", choices=c("",sort(unique(list_unique_origins))), selected="")
-      updateSelectInput(inputId="destination", choices=c("",sort(unique(list_unique_dests))), selected="")
+        updateSelectInput(inputId="origin", choices=c("",sort(unique(list_unique_origins))), selected="")
+        updateSelectInput(inputId="destination", choices=c("",sort(unique(list_unique_dests))), selected="")
+        updateSelectInput(inputId="year2", choices=c("",list_year2), selected="")
     })
 
     observeEvent(input$origin, {
@@ -313,9 +376,10 @@ server <- function(input, output) {
       }
       updateSelectInput(inputId = "origin", choices = origin_choices, selected = input$origin)
     })
-
-    observeEvent(c(input$origin, input$destination), {
-      if (input$origin != "" & input$destination != "") {
+    
+    
+    observeEvent(c(input$origin, input$destination, input$year2), {
+      if (input$origin != "" & input$destination != "" & input$year2 != "") {
         shinyjs::enable("submit_button")
       } else {
         shinyjs::disable("submit_button")
