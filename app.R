@@ -22,9 +22,10 @@ writeup_motivation <- "<li>There were several important events that took place f
 <div id='motivation'><em><li>September 11 attacks (2001):</li></em><ul><li> The terrorist attacks on September 11, 2001, had a profound impact on the aviation industry, leading to increased security measures and changes in the way airlines operate. The attacks resulted in a significant decline in air travel demand, leading to financial losses for the industry.</ul></li></div>
 <div id='motivation'><em><li>Global Financial Crisis (2007-2008):</li></em><ul><li> The global financial crisis had a significant impact on the aviation industry, leading to a decline in air travel demand and financial losses for airlines. Many airlines were forced to cut costs, reduce capacity, and lay off employees to stay afloat.</ul></li></div></div></ol>"
 
-vis1_writeup <- "<ul><li>This visualisation mainly shows monthly aggregated data for a chose year. To go further in the analysis, a month within the year can be chosen to break the visualisations down into departure delay and arrival delay.</li><li>Inputs: <ul><li>Year</li><li>Month</li></ul></li></ul>"
-vis2_writeup <- "<ul><li>vis2 writeup</li></ul>"
-vis3_writeup <- "<ul><li>vis3 writeup</li></ul>"
+vis1_writeup <- "<ul><li>This visualisation shows monthly aggregated data for a chosen year. To go further in the analysis, a month within the year can be chosen to break the visualisations down into departure delay and arrival delay.
+</li><li>Inputs: <ul><li>Year</li><li>Month</li></ul></li></ul>"
+vis2_writeup <- "<ul><li>This visualisation aims to show the cascading delays for a flight with chosen origin, destination and year.</li><li>Inputs: <ul><li>Origin</li><li>Destination</li><li>Year</li></ul></li></ul>"
+vis3_writeup <- "<ul><li>This visualisation shows the correlation between the variables and delay for a chosen year, flight type. Output rendered are the results output based on different derived when using different machine learning models.</li><li>Users can choose from 'Linear Model' or 'Decision Tree' for model selection, as well as 'Arriving' or 'Departing' flights for flight type selection.</li><li>Inputs: <ul><li>Model</li><li>Flight Type</li><li>Year</li></ul></li></ul>"
 
 # Define UI
 ui <- fluidPage(
@@ -99,7 +100,7 @@ ui <- fluidPage(
                mainPanel(
                  htmlOutput("vis2_welcometext"),
                  #display map on screen
-                 leafletOutput("locations"), #locations is name of map
+                 leafletOutput("locations", height = 600), #locations is name of map
                  br(),
                  # uiOutput("legend_text"),
                  # tags$img(src = paste0("data:image/svg+xml;utf8,", 
@@ -113,7 +114,7 @@ ui <- fluidPage(
              sidebarLayout(
                sidebarPanel(
                  selectInput("model", label = "Select model", choices = c("Linear Model", "Decision Tree", ""), selected = ""),
-                 selectInput("flight", label = "Select flight type :", choices = c("Arriving", "Departing", ""), selected = ""),
+                 selectInput("flight", label = "Select flight type", choices = c("Arriving", "Departing", ""), selected = ""),
                  selectInput("year3", label = "Select year", choices = c("1989", "1990", "2000", "2001", "2006", "2007", ""), selected = ""),
                  # Action button
                  actionButton("plot_button", "Plot!", icon = icon("fas fa-bar-chart", lib="font-awesome", style="color:black;"))
@@ -121,7 +122,7 @@ ui <- fluidPage(
               mainPanel(
                 htmlOutput("vis3_welcometext"),
                 fluidRow(
-                  column(12, plotOutput("plot1", height = 500)),
+                  column(12, plotOutput("plot1", height = 500), style = "padding-bottom: 15px;"),
                   column(12, plotOutput("plot2", height = 500))
                 )
               )
@@ -256,7 +257,7 @@ server <- function(input, output) {
   
   output$vis2_welcometext <- renderUI({
     if (input$origin == "" || input$destination == "" || input$year2 == "") {
-      paste0("select input from left")
+      paste0("Please select all inputs from the left panel")
     } else if (input$submit_button == 0) {
       paste0("Please press the enter button")
     } else {
@@ -505,7 +506,7 @@ server <- function(input, output) {
 
   output$vis3_welcometext <- renderUI({
     if (input$model == "" || input$flight == "" || input$year3 == "") {
-      paste0("select input from left")
+      paste0("Please select all inputs from the left panel")
     } else if (input$plot_button == 0) {
       paste0("Please press the plot button")
     } else {
