@@ -70,7 +70,7 @@ ui <- fluidPage(
                              selected = ""),
                  selectInput("month", "Select month",
                              choices = NULL,
-                             selected = ""),
+                             selected = "")
                ),
                mainPanel(
                  htmlOutput("selected_year"),
@@ -232,7 +232,7 @@ server <- function(input, output) {
   
   
   ##vis2:
-  url1 <- "http://backend_cascade:5000/query?origin=" # + origin
+  url1 <- "http://localhost:5001/query?origin=" # + origin
   url2 <- "&dest=" # + destination
   url3 <- "&year=" # + year
   list_unique_origins <- c('ATL', 'ORD', 'DFW', 'LAX', 'PHX', 'DEN', 'IAH', 'LAS', 'DTW', 'STL')
@@ -268,6 +268,7 @@ server <- function(input, output) {
   observeEvent(input$submit_button, {
     response <- GET(paste0(url1, input$origin, url2, input$destination, url3, input$year2))
     content <- content(response, as ='text')
+    print(paste0(url1, input$origin, url2, input$destination, url3, input$year2))
     json_content <- fromJSON(content)
     df <- as.data.frame(json_content)
     dat(df)
@@ -411,15 +412,15 @@ server <- function(input, output) {
   })
   
   ##VIS3 -------
-  url1 <- "http://backend_ml_model:5000/coefficients?mode=" # + origin
-  url2 <- "_"
+  url5 <- "http://localhost:1000/coefficients?mode=" # + origin
+  url6 <- "_"
 
 
   observeEvent(input$plot_button, {
     if (input$model == "Linear Model") {
       input_flight = ifelse(input$flight == "Arriving", "arr", "dep")
-      url_1 <- paste0(url1, "lm", url2, input_flight, url2, input$year3, url2, 'T')
-      url_2 <- paste0(url1, "lm", url2, input_flight, url2, input$year3, url2, 'F')
+      url_1 <- paste0(url5, "lm", url6, input_flight, url6, input$year3, url6, 'T')
+      url_2 <- paste0(url5, "lm", url2, input_flight, url6, input$year3, url6, 'F')
       response1 <- GET(url_1)
       content1 <- content(response1, as ='text')
       print(typeof(content1))
@@ -467,7 +468,7 @@ server <- function(input, output) {
       })
 
     } else {
-      url_1 <- paste0(url1, input$mode, url2, input$flight, url2, input$year3, url2)
+      url_1 <- paste0(url5, input$mode, url6, input$flight, url6, input$year3, url6)
       response1 <- GET(url_1)
       content1 <- content(response1, as ='text')
       json_content1 <- fromJSON(content1)
