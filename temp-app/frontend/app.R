@@ -405,14 +405,6 @@ server <- function(input, output) {
         input$year2
       ))
     content <- content(response, as = 'text')
-    print(paste0(
-      url1,
-      input$origin,
-      url2,
-      input$destination,
-      url3,
-      input$year2
-    ))
     json_content <- fromJSON(content)
     df <- as.data.frame(json_content)
     dat(df)
