@@ -32,7 +32,6 @@ def create_lm_arr_model(result, year, std):
     arr_df['season'] = arr_df['month'].apply(get_season)
     arr_df = arr_df.astype({'day_of_week': 'category'})
     arr_df['tmean_dest'] = (arr_df['tmin_dest'] + arr_df['tmax_dest']) / 2
-    print('------check tables')
     print(arr_df[['tmean_dest', 'tmin_dest', 'tmax_dest']])
 
     arr_regression_cols = ['season', 'day_of_week', 'crs_arr_bin', 'distance', 'prcp_dest', 'snow_dest', 'snwd_dest', 'tmean_dest', 'arr_delay']
@@ -52,9 +51,9 @@ def create_lm_arr_model(result, year, std):
     lm_arr.fit(arr_X, arr_y)
 
     if std == "T":
-        file_to_save = f"lm_arr_{year}_std.pkl"
+        file_to_save = f"lm_arr_{year}_T.pkl"
     else:
-        file_to_save = f"lm_arr_{year}.pkl"
+        file_to_save = f"lm_arr_{year}_F.pkl"
 
     joblib.dump(lm_arr, file_to_save, compress = 3)
     print(f'---Successfully dumped {file_to_save}---')
@@ -92,10 +91,10 @@ def create_lm_dep_model(result, year, std):
     lm_dep = LinearRegression()
     lm_dep.fit(dep_X, dep_y)
     
-    if std == "True":
-        file_to_save = f"lm_dep_{year}_std.pkl"
+    if std == "T":
+        file_to_save = f"lm_dep_{year}_T.pkl"
     else:
-        file_to_save = f"lm_dep_{year}.pkl"
+        file_to_save = f"lm_dep_{year}_F.pkl"
 
     joblib.dump(lm_dep, file_to_save, compress = 3)
     print(f'---Successfully dumped {file_to_save}---')

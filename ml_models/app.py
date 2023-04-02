@@ -10,11 +10,6 @@ app = Flask(__name__)
 def front_page():
     return "Our model outputs"
 
-# input (mode):
-# "<ml_model>_<direction>_<year>", where <ml_model>: lm, dt
-#                                  and   <direction>: arr, dep
-#                                  and   <year>: 1989, 1990, 2000, 2001, 2006, 2007
-# eg. "lm_arr_1989_True"
 @app.route("/coefficients", methods=['GET'])
 def get_coefficients():
 
@@ -45,10 +40,6 @@ def get_coefficients():
         print(e)
         print("Cannot get_coefficients")
 
-# input (mode):
-# "dt_<direction>_<year>", where <direction>: arr, dep
-#                          and   <year>: 1989, 1990, 2000, 2001, 2006, 2007
-# eg. "dt_arr_1989"
 @app.route("/plots")
 def return_plot():
     try:
