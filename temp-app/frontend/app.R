@@ -139,7 +139,6 @@ ui <- fluidPage(
                mainPanel(
                  htmlOutput("vis2_welcometext"),
                  leafletOutput("locations", height = 600),
-                 #locations is name of map
                  br()
                )
              )),
@@ -174,8 +173,8 @@ ui <- fluidPage(
                ),
                mainPanel(htmlOutput("vis3_welcometext"),
                          fluidRow(
-                           column(12, plotOutput("plot1", height = 500), style = "padding-bottom: 15px;"),
-                           column(12, plotOutput("plot2", height = 500))
+                           column(12, plotOutput("plot1"), style = "padding-bottom: 15px;"),
+                           column(12, plotOutput("plot2"))
                          ))
              ))
   )
@@ -183,6 +182,7 @@ ui <- fluidPage(
 
 # Define server function
 server <- function(input, output) {
+  ##vis1
   month_order <-
     c("Jan",
       "Feb",
@@ -202,7 +202,7 @@ server <- function(input, output) {
   observe({
     updateSelectInput(
       inputId = "year",
-      choices = c("", unique(data$Year)),
+      choices = c("1989", "1990", "2000", "2001", "2006", "2007", ""),
       selected = ""
     )
   })
@@ -354,7 +354,8 @@ server <- function(input, output) {
       'LAS',
       'DTW',
       'STL')
-  list_year2 <- as.character(seq(1987, 2012))
+  
+  list_year2 <- c("1989", "1990", "2000", "2001", "2006", "2007", "")
   
   dat <- reactiveVal(NULL)
   
@@ -465,8 +466,6 @@ server <- function(input, output) {
     polyLinesSubset <-
       cascade %>% filter(cascade$DEST != input$origin)
     
-    
-    #setup an empty map
     first_row_data <-
       gcIntermediate(
         c(cascade$originLng[1], cascade$originLat[1]),
@@ -647,7 +646,7 @@ server <- function(input, output) {
     }
   })
   
-  ##VIS3 -------
+  ##Vis3
   url5 <-
     "http://backend_ml_models:5000/coefficients?mode=" # + origin
   url6 <- "_"
@@ -668,7 +667,7 @@ server <- function(input, output) {
       url_2 <-
         paste0(url5,
                "lm",
-               url2,
+               url6,
                input_flight,
                url6,
                input$year3,
