@@ -232,7 +232,7 @@ server <- function(input, output) {
   
   
   ##vis2:
-  url1 <- "http://localhost:5001/query?origin=" # + origin
+  url1 <- "http://backend_cascade:5000/query?origin=" # + origin
   url2 <- "&dest=" # + destination
   url3 <- "&year=" # + year
   list_unique_origins <- c('ATL', 'ORD', 'DFW', 'LAX', 'PHX', 'DEN', 'IAH', 'LAS', 'DTW', 'STL')
@@ -412,7 +412,7 @@ server <- function(input, output) {
   })
   
   ##VIS3 -------
-  url5 <- "http://localhost:1000/coefficients?mode=" # + origin
+  url5 <- "http://backend_ml_models:5000/coefficients?mode=" # + origin
   url6 <- "_"
 
 
