@@ -14,4 +14,4 @@ def connect_db():
     
     except Exception as e:
         print(e)
-        print("Cannot connect_db")
+        raise Exception('Cannot connect to database')
