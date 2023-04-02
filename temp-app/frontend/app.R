@@ -112,9 +112,9 @@ ui <- fluidPage(
     tabPanel("Vis 3",
              sidebarLayout(
                sidebarPanel(
-                 selectInput("model", label = "Model:", choices = c("Linear Model", "Decision Tree", ""), selected = ""),
-                 selectInput("flight", label = "Flight type :", choices = c("Arriving", "Departing", ""), selected = ""),
-                 selectInput("year3", label = "Year:", choices = c("1989", "1990", "2000", "2001", "2006", "2007", ""), selected = ""),
+                 selectInput("model", label = "Select model", choices = c("Linear Model", "Decision Tree", ""), selected = ""),
+                 selectInput("flight", label = "Select flight type :", choices = c("Arriving", "Departing", ""), selected = ""),
+                 selectInput("year3", label = "Select year", choices = c("1989", "1990", "2000", "2001", "2006", "2007", ""), selected = ""),
                  # Action button
                  actionButton("plot_button", "Plot!", icon = icon("fas fa-bar-chart", lib="font-awesome", style="color:black;"))
                ),
