@@ -132,7 +132,7 @@ def create_dt_arr_model(result, year):
     dt_arr = DecisionTreeClassifier(max_leaf_nodes = arr_leaf_dic[year])
     dt_arr.fit(X_resampled, y_resampled)
 
-    plt.figure()
+    plt.figure(figsize= (13, 10))
     class_labels = ["No Delay", "Delay"]
     column_names = ['Distance', 'Destination Precipitation', 'Destination Snow', 'Destination Snow Depth', 
                     'Destination Mean Temperature', 'Autumn', 'Spring', 'Summer', 'Winter', 'Monday',
@@ -140,7 +140,7 @@ def create_dt_arr_model(result, year):
                     'Arrival Time: 12am-6am', 'Arrival Time: 6am-12pm', 'Arrival Time: 12pm-6pm',
                     'Arrival Time: 6pm-12am']
     plot_tree(dt_arr, feature_names = column_names, class_names = class_labels, filled = True, impurity = False, precision = 0)
-    plt.savefig(f'dt_arr_{year}.png', bbox_inches = "tight")
+    plt.savefig(f'dt_arr_{year}.png', bbox_inches = "tight", dpi = 500)
                 
     file_to_save = f"dt_arr_{year}.pkl"
 
@@ -182,7 +182,7 @@ def create_dt_dep_model(result, year):
     dt_dep = DecisionTreeClassifier(max_leaf_nodes = dep_leaf_dic[year])
     dt_dep.fit(X_resampled, y_resampled)
 
-    plt.figure()
+    plt.figure(figsize = (13, 10))
     class_labels = ["No Delay", "Delay"]
     column_names = ['Distance', 'Origin Precipitation', 'Origin Snow', 'Origin Snow Depth', 
                     'Origin Mean Temperature', 'Autumn', 'Spring', 'Summer', 'Winter', 'Monday',
@@ -190,7 +190,7 @@ def create_dt_dep_model(result, year):
                     'Departure Time: 12am-6am', 'Departure Time: 6am-12pm', 'Departure Time: 12pm-6pm',
                     'Departure Time: 6pm-12am']
     plot_tree(dt_dep, feature_names = column_names, class_names = class_labels, filled = True, impurity = False, precision = 0)
-    plt.savefig(f'dt_dep_{year}.png', bbox_inches = "tight")
+    plt.savefig(f'dt_dep_{year}.png', bbox_inches = "tight", dpi = 500)
     
     file_to_save = f"dt_dep_{year}.pkl"
 

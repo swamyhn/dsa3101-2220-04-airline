@@ -2,10 +2,13 @@
 - linear regression (lm)
 - decision tree (dt)
 
-## Execute these steps on bash shell to run the flask app
+## Execute these steps on bash terminal to run the flask app
 1. docker pull swamyhn/mysqldb
 2. cd to this folder
-3. docker compose up --build (this will take around 5mins)
+3. docker compose up --build 
+
+    **Wait for the all the commands in orange to be executed, will take around 5 mins**
+![alt text](images/bash_terminal.png)
 4. The homepage will be on localhost:1000
 5. Model coefficients will be on 'localhost:1000/coefficients?mode=mlmodel_direction_year_[std] where
     - mlmodel: lm, dt
