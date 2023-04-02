@@ -9,10 +9,10 @@ services:
       - backend_ml_models
     volumes:
       - ./frontend:/app
-  
+
   backend_cascade:
     build: ./cascade
-    ports: 
+    ports:
       - "5001:5000"
 
   backend_ml_models:
@@ -20,7 +20,7 @@ services:
     ports:
       - "1000:5000"
     restart: always
-    
+
   mysql:
     image: "swamyhn/mysqldb:latest"
     ports:
