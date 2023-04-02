@@ -23,7 +23,8 @@ def load_and_train(mode):
             if ml_model == 'lm':
                 std = mode[-1]
                 if std not in ['T', 'F']:
-                    raise Exception('Invalid input for standardisation condition')
+                    print('Input for standardisation condition:', std)
+                    raise Exception('Invalid input for standardisation condition, must be T or F')
                 myModel = model.create_lm_arr_model(df, yr, std)
                 print('---Successfully created lm model---')
             elif ml_model == 'dt':
@@ -48,5 +49,5 @@ def load_and_train(mode):
         
     except Exception as e:
         print(e)
-        print("Cannot load_and_train")
+        raise Exception('Cannot load and train')
     

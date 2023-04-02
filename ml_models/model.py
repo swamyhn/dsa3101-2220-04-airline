@@ -32,7 +32,6 @@ def create_lm_arr_model(result, year, std):
     arr_df['season'] = arr_df['month'].apply(get_season)
     arr_df = arr_df.astype({'day_of_week': 'category'})
     arr_df['tmean_dest'] = (arr_df['tmin_dest'] + arr_df['tmax_dest']) / 2
-    print(arr_df[['tmean_dest', 'tmin_dest', 'tmax_dest']])
 
     arr_regression_cols = ['season', 'day_of_week', 'crs_arr_bin', 'distance', 'prcp_dest', 'snow_dest', 'snwd_dest', 'tmean_dest', 'arr_delay']
     arr_regression_df = arr_df[arr_regression_cols]
@@ -140,7 +139,7 @@ def create_dt_arr_model(result, year):
                     'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
                     'Arrival Time: 12am-6am', 'Arrival Time: 6am-12pm', 'Arrival Time: 12pm-6pm',
                     'Arrival Time: 6pm-12am']
-    plot_tree(dt_arr, feature_names = X_resampled.columns, class_names = class_labels, filled = True, impurity = False, precision = 0)
+    plot_tree(dt_arr, feature_names = column_names, class_names = class_labels, filled = True, impurity = False, precision = 0)
     plt.savefig(f'dt_arr_{year}.png', bbox_inches = "tight")
                 
     file_to_save = f"dt_arr_{year}.pkl"

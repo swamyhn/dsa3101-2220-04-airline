@@ -17,3 +17,4 @@
 7. Plots for the decision trees will be on 'localhost:1000/plots?mode=**dt**_direction_year' where
     - direction: arr, dep
     - year: 1989, 1990, 2000, 2001, 2006, 2007
+8. E.g mode: lm_dep_2001_T, lm_arr_1989_F, dt_arr_2007
