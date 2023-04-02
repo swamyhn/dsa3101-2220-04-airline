@@ -116,7 +116,7 @@ ui <- fluidPage(
                  selectInput("flight", label = "Flight type :", choices = c("Arriving", "Departing", ""), selected = ""),
                  selectInput("year3", label = "Year:", choices = c("1989", "1990", "2000", "2001", "2006", "2007", ""), selected = ""),
                  # Action button
-                 actionButton("plot_button", "Plot!")
+                 actionButton("plot_button", "Plot!", icon = icon("fas fa-bar-chart", lib="font-awesome", style="color:black;"))
                ),
               mainPanel(
                 htmlOutput("vis3_welcometext"),
