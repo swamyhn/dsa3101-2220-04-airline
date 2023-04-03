@@ -24,7 +24,7 @@ WORKDIR /app
 COPY . .
 
 # install packages
-RUN R -e 'install.packages(pkgs=c("shiny", "shinythemes", "ggplot2", "tidyverse", "plotly", "dplyr", "leaflet", "airportr","shinyWidgets", "geosphere", "sp", "shinyjs", "htmltools", "leaflegend", "httr", "jsonlite"))'
+RUN R -e 'install.packages(pkgs=c("shiny", "shinythemes", "ggplot2", "tidyverse", "plotly", "dplyr", "leaflet", "airportr","shinyWidgets", "geosphere", "sp", "shinyjs", "htmltools", "leaflegend", "httr", "jsonlite", "grid", "png"))'
 
 EXPOSE 3838
 

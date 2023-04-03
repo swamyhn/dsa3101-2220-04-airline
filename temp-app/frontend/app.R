@@ -15,13 +15,15 @@ library(htmltools)
 library(leaflegend)
 library(httr)
 library(jsonlite)
+library(grid)
+library(png)
 
 origin_dest <- function(origin, year){
   df <- Delayed %>% filter(ORIGIN==origin, YEAR==year) %>%
     group_by(ORIGIN, DEST) %>%
     summarise_at(vars("delayed_dep", "delayed_arr", "total_flights"), sum) %>%
-    ungroup()  %>% 
-    mutate('Delayed_departure'=delayed_dep/total_flights*100, 
+    ungroup()  %>%
+    mutate('Delayed_departure'=delayed_dep/total_flights*100,
            'Delayed_arrival'=delayed_arr/total_flights*100)
   return(df)
 }
@@ -128,7 +130,7 @@ ui <- fluidPage(
   tags$head(tags$style(
     HTML(
       # "body {background: #ADD8E6}",
-      "#selected_year, #vis2_welcometext, #vis3_welcometext {
+      "#selected_year, #vis2_welcometext, #vis3_welcometext, #vis4_welcometext {
                     font-size: 20px;
                     padding-bottom: 20px;
       }",
@@ -231,20 +233,20 @@ ui <- fluidPage(
                  htmlOutput("vis2_welcometext"),
                  leafletOutput("locations", height = 600),
                  br(),
-                 plotOutput("delay_bar"),
-                 DT::DTOutput("delay_info")
+                 # plotOutput("delay_bar"),
+                 # DT::DTOutput("delay_info")
                )
              )),
     
     tabPanel("Vis 3",
              sidebarLayout(
                sidebarPanel3(
-                 selectInput(
-                   "model",
-                   label = "Select model",
-                   choices = c("Linear Model", "Decision Tree", ""),
-                   selected = ""
-                 ),
+                 # selectInput(
+                 #   "model",
+                 #   label = "Select model",
+                 #   choices = c("Linear Model", "Decision Tree", ""),
+                 #   selected = ""
+                 # ),
                  selectInput(
                    "flight",
                    label = "Select flight type",
@@ -281,6 +283,52 @@ ui <- fluidPage(
                ),
                mainPanel(htmlOutput("vis3_welcometext"),
                          uiOutput("vis3_plot"))
+             )),
+    tabPanel("Vis 4",
+             sidebarLayout(
+               sidebarPanel3(
+                 # selectInput(
+                 #   "model",
+                 #   label = "Select model",
+                 #   choices = c("Linear Model", "Decision Tree", ""),
+                 #   selected = ""
+                 # ),
+                 selectInput(
+                   "flight4",
+                   label = "Select flight type",
+                   choices = c("Arriving", "Departing", ""),
+                   selected = ""
+                 ),
+                 selectInput(
+                   "year4",
+                   label = "Select year",
+                   choices = c("1989", "1990", "2000", "2001", "2006", "2007", ""),
+                   selected = ""
+                 ),
+                 # Action button
+                 actionButton(
+                   "vis4_plot_button",
+                   "Plot!",
+                   icon = icon("fas fa-bar-chart", lib = "font-awesome", style = "color:black;")
+                 ),
+                 out = HTML(paste('<div><h3> How to use visualisation </h3>', vis3_instruction,"</div>")),
+                 out2 = 
+                   HTML("<h3> Explanation of variables </h3><div style='font-size: 10px;'><div>
+<ul><li>distance: distance of route</div> </li></ul>
+<ul><li>prcp_{origin/dest}: precipitation (mm) in the state of the origin/destination airport</li></ul>
+<ul><li>snow_{origin/dest}: snowfall (mm) in the state of the origin/destination airport</li></ul>
+<ul><li>snwd_{origin/dest}: snow depth (mm) in the state of the origin/destination airport</li></ul>
+<ul><li>tmax_{origin/dest}: maximum temperature (°C) in the state of the origin/destination airport</li></ul>
+<ul><li>tmin_{origin/dest}:minimum temperature (°C) in the state of the origin/destination airport</li></ul>
+<ul><li>season_*: autumn, spring, summer and winter</li></ul>
+<ul><li>day_of_week_*: 1 to 7 represents Monday to Sunday</li></ul>
+<ul><li>crs_arr_bin_00-06: departure time 0000 to before 0600</li></ul>
+<ul><li>crs_arr_bin_06-12: departure time 0600 to before 1200</li></ul>
+<ul><li>crs_arr_bin_12-18: departure time 1200 to before 1800</li></ul>
+<ul><li>crs_arr_bin_18-00: departure time 1800 onwards</li></ul></div>")
+               ),
+               mainPanel(htmlOutput("vis4_welcometext"),
+                         uiOutput("vis4_image"))
              ))
   )
 )
@@ -752,24 +800,8 @@ server <- function(input, output) {
     }
   })
   
-  output$delay_bar <- renderPlot({
-    data <- origin_dest(input$origin, input$year2)
-    data <- data %>% select(ORIGIN, Delayed_arrival, Delayed_departure) %>%
-      gather(variable, percentage , -ORIGIN)
-    ggplot(data, aes(ORIGIN, percentage, fill = variable)) +
-      geom_bar(stat="identity", position = "dodge") +
-      labs(title=paste("Percentage of delayed flights of", input$destination, 
-                       "compared to other destination airports from",
-                       input$origin))
-  })
-  output$delay_info <- DT::renderDT({
-    origin_dest(input$origin, input$year2) %>%
-      DT::datatable()
-  })
-  
   ##Vis3
   url5 <- "http://backend_ml_models:5000/coefficients?mode="
-  url7 <- "http://backend_ml_models:5000/plots?mode="
   url6 <- "_"
   
   output$vis3_plot <- renderUI({
@@ -786,7 +818,6 @@ server <- function(input, output) {
   
   observeEvent(input$plot_button, {
     input_flight = ifelse(input$flight == "Arriving", "arr", "dep")
-    if (input$model == "Linear Model") {
       url_1 <-
         paste0(url5,
                "lm",
@@ -872,50 +903,11 @@ server <- function(input, output) {
           ggtitle("Plot with unstandardised coefficients (F)")
       })
       
-    } else {
-      url_1 <-
-        paste0(url7,
-               'dt',
-               url6,
-               input_flight,
-               url6,
-               input$year3)
-      response1 <- GET(url_1)
-      content1 <- content(response1, as = 'text')
-      json_content1 <- fromJSON(content1)
-      df1 <- as.data.frame(json_content1)
-      output$plot1 <- renderPlot({
-        coefficients$Variables <-
-          factor(coefficients$Variables,
-                 levels = rev(coefficients$Variables[order(coefficients$Coefficients)]))
-        coefficients_processed <-
-          coefficients %>% mutate(colour = ifelse(Coefficients > 0, "#619CFF", "#F8766D"))
-        
-        ggplot(coefficients_processed,
-               aes(
-                 x = Coefficients,
-                 y = Variables,
-                 fill = colour
-               )) +
-          geom_bar(stat = "identity") +
-          theme(
-            axis.title = element_text(size = 17),
-            axis.text = element_text(size = 14),
-            legend.text = element_text(size = 14),
-            legend.title = element_text(size = 14)
-          ) +
-          labs(x = "Correlation", y = "Variables") +
-          scale_fill_manual(
-            name = "Legend",
-            values = c("#F8766D", "#619CFF"),
-            labels = c("negative correlation", "positive correlation")
-          )
-      })
-    }
+    
   })
   
-  observeEvent(c(input$model, input$flight, input$year3), {
-    if (input$model != "" & input$flight != "" & input$year3 != "") {
+  observeEvent(c(input$flight, input$year3), {
+    if (input$flight != "" & input$year3 != "") {
       shinyjs::enable("plot_button")
     } else {
       shinyjs::disable("plot_button")
@@ -923,31 +915,15 @@ server <- function(input, output) {
   })
   
   reactive_text3 <- eventReactive(input$plot_button, {
-    if (input$model == "Linear Model") {
       paste0(
         "Barplot of correlation of variables in relation to ",
         input$flight,
         " flights in Year ",
-        input$year3,
-        " (",
-        input$model,
-        ")"
-      )
-    } else {
-      paste0(
-        "Barplot of correlation of variables in relation to ",
-        input$flight,
-        " flights in Year ",
-        input$year3,
-        " (",
-        input$model,
-        " Model)"
-      )
-    }
+        input$year3)
   })
   
   output$vis3_welcometext <- renderUI({
-    if (input$model == "" || input$flight == "" || input$year3 == "") {
+    if (input$flight == "" || input$year3 == "") {
       paste0("Please select all inputs from the left panel")
     } else if (input$plot_button == 0) {
       paste0("Please press the plot button")
@@ -956,9 +932,76 @@ server <- function(input, output) {
     }
   })
   
+  
+  ##Vis4
+  output$vis4_image <- renderUI({
+    tags$div(
+      if (input$vis4_plot_button != 0) {
+        plotOutput("image", height = 650)
+      }
+    )
+  })
+  
+  observeEvent(c(input$flight4, input$year4), {
+    if (input$flight4 != "" & input$year4 != "") {
+      shinyjs::enable("plot_button")
+    } else {
+      shinyjs::disable("plot_button")
+    }
+  })
+  
+  reactive_text4 <- eventReactive(input$vis4_plot_button, {
+    paste0(
+    "Decision tree of correlation of variables in relation to ",
+    input$flight4,
+    " flights in Year ",
+    input$year4
+  )
+  })
+  
+  output$vis4_welcometext <- renderUI({
+    if (input$flight4 == "" || input$year4 == "") {
+      paste0("Please select all inputs from the left panel")
+    } else if (input$vis4_plot_button == 0) {
+      paste0("Please press the plot button")
+    } else {
+      reactive_text4()
+    }
+  })
+  
+  observeEvent(input$vis4_plot_button, {
+    input_flight = ifelse(input$flight == "Arriving", "arr", "dep")
+      url7 <- "http://backend_ml_models:5000/plots?mode="
+      url6 <- "_"
+      url_1 <-
+        paste0(url7,
+               'dt',
+               url6,
+               input_flight,
+               url6,
+               input$year4)
+      output$image <- renderPlot({
+        # Make the GET request and retrieve the content
+        flask_url <- "http://backend_ml_models:5000"
+        response <- GET(url_1)
+        content <- content(response, "raw")
+        
+        # Write the content to a temporary PNG file
+        png_file <- tempfile(fileext = ".png")
+        writeBin(content, png_file)
+        
+        # Read the PNG file as a rasterGrob and plot it
+        png_data <- readPNG(png_file)
+        png_raster <- as.raster(png_data)
+        png_grob <- rasterGrob(png_raster)
+        
+        # Display the PNG image
+        grid.newpage()
+        grid.draw(png_grob)
+      })
+  })
+  
 } # server
-
-
 
 # Create Shiny object
 shinyApp(ui = ui, server = server)
