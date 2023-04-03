@@ -49,7 +49,8 @@ ui <- fluidPage(
       "body {margin-left: -15px; margin-right: -15px}",
       "h1 {margin-top: 0px;}",
       "li {margin-bottom:3px; font-size:16px;}",
-      "#motivation {margin-bottom:10px;}"
+      "#motivation {margin-bottom:10px;}",
+      "#plot2 {padding-top:15px;}"
     )
   )),
   navbarPage(
@@ -172,10 +173,7 @@ ui <- fluidPage(
                  )
                ),
                mainPanel(htmlOutput("vis3_welcometext"),
-                         fluidRow(
-                           column(12, plotOutput("plot1"), style = "padding-bottom: 15px;"),
-                           column(12, plotOutput("plot2"))
-                         ))
+                         uiOutput("vis3_plot"))
              ))
   )
 )
@@ -647,14 +645,25 @@ server <- function(input, output) {
   })
   
   ##Vis3
-  url5 <-
-    "http://backend_ml_models:5000/coefficients?mode=" # + origin
+  url5 <- "http://backend_ml_models:5000/coefficients?mode="
+  url7 <- "http://backend_ml_models:5000/plots?mode="
   url6 <- "_"
   
+  output$vis3_plot <- renderUI({
+    tags$div(
+      if (input$plot_button != 0) {
+        plotOutput("plot1")
+      },
+      if (input$plot_button != 0) {
+        plotOutput("plot2") 
+      }
+    )
+  })
+
   
   observeEvent(input$plot_button, {
+    input_flight = ifelse(input$flight == "Arriving", "arr", "dep")
     if (input$model == "Linear Model") {
-      input_flight = ifelse(input$flight == "Arriving", "arr", "dep")
       url_1 <-
         paste0(url5,
                "lm",
@@ -673,6 +682,7 @@ server <- function(input, output) {
                input$year3,
                url6,
                'F')
+      
       response1 <- GET(url_1)
       content1 <- content(response1, as = 'text')
       json_content1 <- fromJSON(content1)
@@ -741,13 +751,12 @@ server <- function(input, output) {
       
     } else {
       url_1 <-
-        paste0(url5,
-               input$mode,
+        paste0(url7,
+               'dt',
                url6,
-               input$flight,
+               input_flight,
                url6,
-               input$year3,
-               url6)
+               input$year3)
       response1 <- GET(url_1)
       content1 <- content(response1, as = 'text')
       json_content1 <- fromJSON(content1)
