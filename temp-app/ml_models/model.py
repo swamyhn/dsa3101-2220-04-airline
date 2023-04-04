@@ -10,6 +10,8 @@ def bin_time(crs_time):
     bin_dict = {0: '00-06', 1: '06-12', 2: '12-18', 3: '18-00'}
     if crs_time == 2400:
         return '18-00'
+    elif pd.isnull(crs_time):
+        return '00-06'
     return bin_dict[crs_time // 600]
 
 def get_season(month):
