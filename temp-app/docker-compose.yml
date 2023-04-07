@@ -15,13 +15,35 @@ services:
     ports:
       - "5001:5000"
 
+  mysql:
+    image: "swamyhn/mysqldb:latest"
+    ports:
+      - "5432:3306"
+  
+  model:
+    build: ./ml_models_v2
+    depends_on:
+      - wait_mysql
+    ports:
+      - "80:80"
+    entrypoint: ["python", "main.py"]
+    restart: on-failure
+    volumes:
+      - model-data:/app
+
+  wait_mysql:
+    image: busybox
+    depends_on:
+      - mysql
+    command: /bin/sh -c 'until nc -z mysql 3306; do echo "Waiting for MySQL to start..."; sleep 10; done; echo MySQL is up!'
+  
   backend_ml_models:
     build: ./ml_models_v2
     ports:
       - "1000:5000"
     restart: always
+    volumes:
+      - model-data:/app
 
-  mysql:
-    image: "swamyhn/mysqldb:latest"
-    ports:
-      - "5432:3306"
+volumes:
+  model-data:
