@@ -41,7 +41,7 @@
 2. Dockerise the database
 - Replace {db_password} in the Dockerfile with your MYSQL password
 - Open a terminal and execute the following command to build the image:
-    docker build -t {dockerhub username}/mysqldb 
+    docker build -t {dockerhub username}/mysqldb .
     - The image is tagged with dockerhub username at the front so that there is no permission error when pushing to a dockerhub repository in your dockerhub account.
 
 3. Add image to dockerhub
