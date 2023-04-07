@@ -10,8 +10,6 @@ def bin_time(crs_time):
     bin_dict = {0: '00-06', 1: '06-12', 2: '12-18', 3: '18-00'}
     if crs_time == 2400:
         return '18-00'
-    elif pd.isnull(crs_time):
-        return '00-06'
     return bin_dict[crs_time // 600]
 
 def get_season(month):
@@ -144,10 +142,7 @@ def create_dt_arr_model(result, year):
     plot_tree(dt_arr, feature_names = column_names, class_names = class_labels, filled = True, impurity = False, precision = 0)
     plt.savefig(f'dt_arr_{year}.png', bbox_inches = "tight", dpi = 500)
                 
-    file_to_save = f"dt_arr_{year}.pkl"
-
-    joblib.dump(dt_arr, file_to_save, compress = 3)
-    print(f'---Successfully dumped {file_to_save}---')
+    print(f'---Successfully saved dt_arr_{year}.png---')
 
     return dt_arr
 
@@ -194,9 +189,6 @@ def create_dt_dep_model(result, year):
     plot_tree(dt_dep, feature_names = column_names, class_names = class_labels, filled = True, impurity = False, precision = 0)
     plt.savefig(f'dt_dep_{year}.png', bbox_inches = "tight", dpi = 500)
     
-    file_to_save = f"dt_dep_{year}.pkl"
-
-    joblib.dump(dt_dep, file_to_save, compress = 3)
-    print(f'---Successfully dumped {file_to_save}---')
+    print(f'---Successfully saved dt_dep_{year}.png---')
 
     return dt_dep

@@ -40,6 +40,9 @@ def load_and_train(mode):
             df = pd.DataFrame(result, columns=[desc[0] for desc in cursor.description])
             if ml_model == 'lm':
                 std = mode[-1]
+                if std not in ['T', 'F']:
+                    print('Input for standardisation condition:', std)
+                    raise Exception('Invalid input for standardisation condition, must be T or F')
                 myModel = model.create_lm_dep_model(df, yr, std) 
                 print('---Successfully created lm model---')
             elif ml_model == 'dt':
@@ -68,11 +71,9 @@ if __name__ == '__main__':
     for m in dir:
         for n in yr:
             dt_file = f'dt_{m}_{n}'
-            if os.path.isfile(f'{dt_file}.pkl'):
-                continue
-            elif os.path.isfile(f'{dt_file}.png'):
+            if os.path.isfile(f'{dt_file}.png'):
                 continue
             load_and_train(dt_file)
-            print(f"Successfully saved {dt_file}.pkl and {dt_file}.png")
+            print(f"Successfully saved {dt_file}.png")
 
-    print('Huge Success!')
+    print('HUGE SUCCESS!')

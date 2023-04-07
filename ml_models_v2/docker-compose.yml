@@ -13,7 +13,7 @@ services:
     entrypoint: ["python", "main.py"]
     restart: on-failure
     volumes:
-      - .:/app
+      - model-data:/app
   wait_mysql:
     image: busybox
     depends_on:
@@ -25,4 +25,6 @@ services:
       - "1000:5000"
     restart: always
     volumes:
-      - .:/app
+      - model-data:/app
+volumes:
+  model-data:

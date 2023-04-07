@@ -15,6 +15,9 @@ def get_coefficients():
     try:
         mode = request.args.get('mode')
         ml_model = mode[:2]
+        if ml_model != 'lm':
+            print('Input for mlmodel condition:', ml_model)
+            return('Invalid input for mlmodel condition: must be lm for coefficients')
 
         pkl_file = f'{mode}.pkl'
 
@@ -25,11 +28,7 @@ def get_coefficients():
         if ml_model == 'lm':
             coef_df = pd.DataFrame({'Variables': myModel.feature_names_in_, 
                                     'Coefficients': myModel.coef_})
-        
-        # elif ml_model == 'dt':
-        #     coef_df = pd.DataFrame({'Variables': myModel.feature_names_in_, 
-        #                     'Coefficients': myModel.feature_importances_})       
-            
+                 
         return jsonify(coef_df.to_dict(orient='records'))
     
     except Exception as e:
@@ -39,11 +38,18 @@ def get_coefficients():
 @app.route("/plots")
 def return_plot():
     try:
-        current_dir = os.getcwd()
-        pkl_file = os.path.join(current_dir, pkl_file)
-        diagram = joblib.load(pkl_file)
+        mode = request.args.get('mode')
+        ml_model = mode[:2]
+        if ml_model != 'dt':
+            print('Input for mlmodel condition:', ml_model)
+            return('Invalid input for mlmodel condition: must be dt for plots')
 
-        return send_file(diagram)
+        png_file = f'{mode}.png'
+
+        current_dir = os.getcwd()
+        png_file = os.path.join(current_dir, png_file)
+
+        return send_file(png_file)
     
     except Exception as e:
         print(e)
