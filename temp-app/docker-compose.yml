@@ -16,7 +16,7 @@ services:
       - "5001:5000"
 
   backend_ml_models:
-    build: ./ml_models
+    build: ./ml_models_v2
     ports:
       - "1000:5000"
     restart: always
