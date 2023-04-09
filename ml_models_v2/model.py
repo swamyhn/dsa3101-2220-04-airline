@@ -116,12 +116,12 @@ def create_dt_arr_model(result, year):
     arr_df['has_arr_delay'] = arr_df['arr_delay'].apply(lambda x: 1 if x >= 60 else 0)
     arr_df['tmean_dest'] = (arr_df['tmin_dest'] + arr_df['tmax_dest']) / 2
 
-    arr_regression_cols = ['season', 'day_of_week', 'crs_arr_bin', 'distance', 'prcp_dest', 'snow_dest', 'snwd_dest', 'tmean_dest', 'has_arr_delay']
-    arr_regression_df = arr_df[arr_regression_cols]
-    arr_regression_df = arr_regression_df.dropna()
-    arr_regression_df = pd.get_dummies(arr_regression_df, columns=['season', 'day_of_week', 'crs_arr_bin'])
-    arr_X = arr_regression_df.drop('has_arr_delay', axis=1)
-    arr_y = arr_regression_df['has_arr_delay']
+    arr_dt_cols = ['season', 'day_of_week', 'crs_arr_bin', 'distance', 'prcp_dest', 'snow_dest', 'snwd_dest', 'tmean_dest', 'has_arr_delay']
+    arr_dt_df = arr_df[arr_dt_cols]
+    arr_dt_df = arr_dt_df.dropna()
+    arr_dt_df = pd.get_dummies(arr_dt_df, columns=['season', 'day_of_week', 'crs_arr_bin'])
+    arr_X = arr_dt_df.drop('has_arr_delay', axis=1)
+    arr_y = arr_dt_df['has_arr_delay']
 
     rus = RandomUnderSampler(random_state=42)
     X_resampled, y_resampled = rus.fit_resample(arr_X, arr_y)
@@ -163,18 +163,18 @@ def create_dt_dep_model(result, year):
     dep_df['has_dep_delay'] = dep_df['dep_delay'].apply(lambda x: 1 if x >= 60 else 0)
     dep_df['tmean_origin'] = (dep_df['tmin_origin'] + dep_df['tmax_origin']) / 2
 
-    dep_regression_cols = ['season', 'day_of_week', 'crs_dep_bin', 'distance', 'prcp_origin', 'snow_origin', 'snwd_origin', 'tmean_origin', 'has_dep_delay']
-    dep_regression_df = dep_df[dep_regression_cols]
-    dep_regression_df = dep_regression_df.dropna()
-    dep_regression_df = pd.get_dummies(dep_regression_df, columns=['season', 'day_of_week', 'crs_dep_bin'])
-    dep_X = dep_regression_df.drop('has_dep_delay', axis=1)
-    dep_y = dep_regression_df['has_dep_delay']
+    dep_dt_cols = ['season', 'day_of_week', 'crs_dep_bin', 'distance', 'prcp_origin', 'snow_origin', 'snwd_origin', 'tmean_origin', 'has_dep_delay']
+    dep_dt_df = dep_df[dep_dt_cols]
+    dep_dt_df = dep_dt_df.dropna()
+    dep_dt_df = pd.get_dummies(dep_dt_df, columns=['season', 'day_of_week', 'crs_dep_bin'])
+    dep_X = dep_dt_df.drop('has_dep_delay', axis=1)
+    dep_y = dep_dt_df['has_dep_delay']
 
     rus = RandomUnderSampler(random_state=42)
     X_resampled, y_resampled = rus.fit_resample(dep_X, dep_y)
     
     #Maximum number of leaf nodes precomputed using sklearn's GridSearchCV
-    dep_leaf_dic = {'1989': 3, '1990': 7, '2000': 2, '2001': 2, '2006': 7, '2007': 3}
+    dep_leaf_dic = {'1989': 3, '1990': 2, '2000': 2, '2001': 2, '2006': 7, '2007': 3}
 
     dt_dep = DecisionTreeClassifier(max_leaf_nodes = dep_leaf_dic[year])
     dt_dep.fit(X_resampled, y_resampled)

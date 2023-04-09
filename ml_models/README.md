@@ -3,9 +3,8 @@
 - decision tree (dt)
 
 ## Execute these steps on bash terminal to run the flask app
-1. docker pull swamyhn/mysqldb
-2. cd to this folder
-3. docker compose up --build 
+1. cd to this folder
+2. docker compose up --build 
 
     **Wait for the all the commands in orange to be executed, will take around 5 mins**
 ![alt text](images/bash_terminal.png)

@@ -26,12 +26,45 @@ def get_coefficients():
             myModel = main.load_and_train(mode)
             print('---Successfully loaded model---')
 
+        coef_var_dict = {'distance': 'Distance',
+                         'prcp_origin': 'Origin Precipitation',
+                         'prcp_dest': 'Destination Precipitation',
+                         'snow_origin': 'Origin Snow',
+                         'snow_dest': 'Destination Snow',
+                         'snwd_origin': 'Origin Snow Depth',
+                         'snwd_dest': 'Destination Snow Depth',
+                         'tmean_origin': 'Origin Mean Temperature',
+                         'tmean_dest': 'Destination Mean Temperature',
+                         'season_autumn': 'Autumn',
+                         'season_spring': 'Spring',
+                         'season_summer': 'Summer',
+                         'season_winter': 'Winter',
+                         'day_of_week_1': 'Monday',
+                         'day_of_week_2': 'Tuesday',
+                         'day_of_week_3': 'Wednesday',
+                         'day_of_week_4': 'Thursday',
+                         'day_of_week_5': 'Friday',
+                         'day_of_week_6': 'Saturday',
+                         'day_of_week_7': 'Sunday',
+                         'crs_arr_bin_00-06': 'Arrival Time: 12am-6am',
+                         'crs_arr_bin_06-12': 'Arrival Time: 6am-12pm',
+                         'crs_arr_bin_12-18': 'Arrival Time: 12pm-6pm',
+                         'crs_arr_bin_18-00': 'Arrival Time: 6pm-12am',
+                         'crs_dep_bin_00-06': 'Departure Time: 12am-6am',
+                         'crs_dep_bin_06-12': 'Departure Time: 6am-12pm',
+                         'crs_dep_bin_12-18': 'Departure Time: 12pm-6pm',
+                         'crs_dep_bin_18-00': 'Departure Time: 6pm-12am'}
+
+        variables = []    
+        for feature in myModel.feature_names_in_:
+            variables.append(coef_var_dict[feature])   
+
         if ml_model == 'lm':
-            coef_df = pd.DataFrame({'Variables': myModel.feature_names_in_, 
+            coef_df = pd.DataFrame({'Variables': variables, 
                                     'Coefficients': myModel.coef_})
         
         elif ml_model == 'dt':
-            coef_df = pd.DataFrame({'Variables': myModel.feature_names_in_, 
+            coef_df = pd.DataFrame({'Variables': variables, 
                             'Coefficients': myModel.feature_importances_})       
             
         return jsonify(coef_df.to_dict(orient='records'))
