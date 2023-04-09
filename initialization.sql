@@ -1,0 +1,52 @@
+create database airlinesdb;
+use airlinesdb;
+
+drop table if exists airlines;
+create table airlines(
+	year int,
+    month int,
+    day_of_month int,
+    day_of_week int,
+    flight_date datetime,
+    unique_carrier text,
+    tail_num text,
+    flight_num int,
+    origin_id int,
+    origin text,
+    origin_state text,
+    dest_id int,
+    dest text,
+    dest_state text,
+    crs_dep_time int,
+    dep_time text,
+    dep_delay int,
+    depdelay_minutes int,
+    dep_delay_15 int,
+    dep_delay_groups int,
+    taxi_out text,
+    wheels_off text,
+    wheels_on text,
+    taxi_in text,
+    crs_arr_time int,
+    arr_time int,
+    arr_delay int,
+    arr_delay_minutes int,
+    arr_delay_15 int,
+    arr_delay_groups int,
+    cancelled int,
+    cancellation_code text,
+    diverted int,
+    crs_elapsed_time int,
+    actual_elapsed_time int,
+    air_time text,
+    flights int,
+    distance int,
+    distance_group int,
+    carrier_delay text,
+    weather_delay text,
+    nas_delay text,
+    security_delay text,
+    late_aircraft_delay text
+);
+
+select * from airlines;
