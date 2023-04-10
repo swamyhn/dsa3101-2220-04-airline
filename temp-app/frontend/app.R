@@ -18,6 +18,9 @@ library(jsonlite)
 library(grid)
 library(png)
 
+#added
+library(shinycssloaders)
+
 origin_dest <- function(origin, year){
   df <- Delayed %>% filter(ORIGIN==origin, YEAR==year) %>%
     group_by(ORIGIN, DEST) %>%
@@ -26,6 +29,18 @@ origin_dest <- function(origin, year){
     mutate('Delayed_departure'=delayed_dep/total_flights*100,
            'Delayed_arrival'=delayed_arr/total_flights*100)
   return(df)
+}
+
+sidebarPanel <- function (..., out = NULL, out2 = NULL, width = 4) 
+{
+  div(class = paste0("col-sm-", width), 
+      tags$form(class = "well", ...),
+      tags$style(HTML("
+        #box {
+          background-color: #f2f2f2; border: 1px solid #ccc; padding: 5px 25px 15px 20px;
+        }
+      "))
+  )
 }
 
 sidebarPanel2 <- function (..., out = NULL, out2 = NULL, width = 4) 
@@ -60,73 +75,151 @@ sidebarPanel3 <- function (..., out = NULL, out2 = NULL, width = 4)
   )
 }
 
-writeup_summary <- "<li>Our app visualises air travel delays from flights across 
-the years 1989 - 1990, 2000 - 2001 and 2006 - 2007.</li><li>Visualisations 1, 2 
-and 3 are meant to help ease visualisations of flight delays over such years and 
-would help to give different insights.</li>"
-writeup_motivation <- "<li>There were several important events that took place 
+writeup_summary <- "The Airline Delay WebApp visualises air travel delays from flights across 
+the years 1989 - 1990, 2000 - 2001 and 2006 - 2007."
+writeup_motivation <- "There were several important events that took place 
 from 1987 to 2012 which had a significant impact on the aviation industry of the 
-USA. Some of the most notable ones are: </li><div style='margin-top:9px;'><ol>
-<div id='motivation'><em><li>Gulf War (1990-1991):</li></em><ul><li> The Gulf 
-War led to a surge in air travel demand as military personnel and their families 
-traveled to and from the region. Airlines increased their capacity to meet the 
-demand, leading to a significant increase in profits for the industry.
-</ul></li></div>
-<div id='motivation'><em><li>September 11 attacks (2001):</li></em><ul><li> 
-The terrorist attacks on September 11, 2001, had a profound impact on the 
-aviation industry, leading to increased security measures and changes in the 
-way airlines operate. The attacks resulted in a significant decline in air 
-travel demand, leading to financial losses for the industry.</ul></li></div>
-<div id='motivation'><em><li>Global Financial Crisis (2007-2008):
-</li></em><ul><li> The global financial crisis had a significant impact on the 
-aviation industry, leading to a decline in air travel demand and financial 
-losses for airlines. Many airlines were forced to cut costs, reduce capacity, 
-and lay off employees to stay afloat.</ul></li></div></div></ol>"
+USA. Some of the most notable ones are in 1990, 2001 and 2007. <br> 
 
-vis1_writeup <- "<ul><li>This visualisation shows periodic aggregated 
-data for a chosen month or year. For further analysis, within specified month 
-and year, the visualisation breaks down to show monthly departure delay and 
-arrival delay.</li><li>Inputs: <ul><li>Year</li><li>Month</li></ul></li></ul>"
-vis2_writeup <- "<ul><li>This visualistion has a geographical map which locates
-the destination cities for a chosen origin city, and vice versa. The user 
-may explore the percentage of delayed arrival and departure flights for the 
-airports within a set month and year with the barchart and dataframe attached 
-below.</li><li>Inputs: <ul><li>Year</li><li>Month</li><li>Origin/Destination
-</li><li>City</li></ul></li></ul>"
-vis3_writeup <- "<ul><li>This visualisation generates a heat map for delay 
-factors including distance, precipitation, temperature, season and day of the 
-week. This helps to highlight the cause of delay for flights in a selected year 
-and flight direction (arrival/departure).</li><li>Inputs: <ul><li>Regression 
-mode</li><li>Flight direction</li><li>Year</li></ul></li></ul>"
+<div style='margin-top:9px;'>
 
-vis1_instruction <- "<ul><li>Select year = 'All' and month = 'All' for yearly 
-aggregated data. This shows the trend of arrival delay from 1989 to 2012.</li>
-</ul><ul><li>Select month = 'All' and a specified year for monthly aggregated 
-data. This shows the trend of arrival delay from Jan to Dec within the chosen 
-year.</li></ul><ul><li>Select year = 'All' and a specified month for yearly 
-aggregated data. This shows the trend of arrival delay from 1989 to 2012 for a 
-chosen month.</li></ul><ul><li>Select specified year and month for a break 
-down of delayed arrival in the bottom left panel and delayed departure in the 
-bottom right panel within the chosen month of the year.</li></ul>"
+<ol>
+  <li id='motivation'>
+  <em>Gulf War (1990):</em> 
+  The Gulf War led to a surge in air travel demand as military personnel and their 
+  families traveled to and from the region. Airlines increased their capacity to meet 
+  the demand, leading to a significant increase in profits for the industry.</li>
 
-vis2_instruction <- "<ul><li>Select specified origin, destination and year to 
-view flight map.</li></ul><ul><li>Red pinpoint represents origin airport and blue 
-pinpoint represents destination airport. Green pinpoints are the airports which 
-experienced cascading delay due to the flight from origin to destination.</li>
-</ul><ul><li>You may scroll down to compare the percentage of delayed arrival 
-and departure flights of destination aiports from the same origin airport in 
-the dataframe below.</li></ul>"
+  <li id='motivation'>
+  <em>September 11 attacks (2001):</em>
+  The terrorist attacks on September 11, 2001, had a profound impact on the 
+  aviation industry, leading to increased security measures and changes in the 
+  way airlines operate. The attacks resulted in a significant decline in air 
+  travel demand.</li>
 
-vis3_instruction <- "<ul><li>Select regression mode, year and flight direction.
-</li></ul><ul><li>The variables are independent factors that we model to find 
-their relationship with flight delay.</li></ul><ul><li>Selecting the linear 
-regression model 'lm' shows a barplot, while selecting the decision tree model 
-'dt' shows a tree plot where left of each split is true, right is false.</li>
-</ul>"
+  <li id='motivation'>
+  <em>Global Financial Crisis (2007):</em> 
+  The global financial crisis had a significant impact on the 
+  aviation industry, leading to a decline in air travel demand and financial 
+  losses for airlines.</li>
+</ol>
+
+In order to see the impacts of these events, we decided on these 3 years and their
+corresponding preceeding years.
+
+</div>"
+
+vis1_writeup <- "This visualisation shows periodic aggregated 
+data for a chosen year (light purple). For further analysis, the visualisation also 
+breaks down to show monthly departure and arrival delays within a specific 
+month (dark purple)."
+vis2_writeup <- "This visualisation shows the cascading of delays for a chosen flight 
+route.<br>
+
+<div style='background-color: #f5f5f5; padding: 10px;'>
+<em>How to interpret the visualisation?</em><br>
+The user selects a flight route by inputting an origin and destination state. 
+Other flight routes from the destination state to other states will appear. These 
+are delays that occur when there is a delay from the origin to the destination state.</div>"
+
+vis3_writeup <- "This visualisation generates a bar graph showing the importance
+of delay factors, detemined by a linear regression model. This helps to highlight 
+the important causes of delays for flights in a selected year and flight direction 
+(arrival/departure).<br>
+<div style='background-color: #f5f5f5; padding: 10px;'>
+<em>How to interpret the visualisation?</em><br>
+The y-axis shows the delay factors, while the x-axis shows the impact of delay factors
+on delays. If the bar graph is extending towards the left (dark purple), the 
+specific feature has a negative impact on delays. If the bar graph extends towards the 
+right (light purple), the specific feature has a positive impact on delays. The longer 
+the bar, the more important a feature is. If no bar graph is present, the feature does 
+not give any information regarding delays.</div>"
+vis4_writeup <- "This visualisation showcases a decision tree plot, which depicts
+the importance of each feature in the classification of delays or no delays.<br>
+<div style='background-color: #f5f5f5; padding: 10px;'>
+<em>How to interpret the visualisation?</em><br>
+There would be a condition at the top of each node. The branch that splits towards 
+the left represents true and towards the right represent false. Note that for categorical
+variables, a value less than or equal to 0 can be interpreted as equal to 0.</div>"
+
+# vis1_instruction <- "<ul><li>Select year = 'All' and month = 'All' for yearly 
+# aggregated data. This shows the trend of arrival delay from 1989 to 2012.</li>
+# </ul><ul><li>Select month = 'All' and a specified year for monthly aggregated 
+# data. This shows the trend of arrival delay from Jan to Dec within the chosen 
+# year.</li></ul><ul><li>Select year = 'All' and a specified month for yearly 
+# aggregated data. This shows the trend of arrival delay from 1989 to 2012 for a 
+# chosen month.</li></ul><ul><li>Select specified year and month for a break 
+# down of delayed arrival in the bottom left panel and delayed departure in the 
+# bottom right panel within the chosen month of the year.</li></ul>"
+
+vis1_instruction <- "Select specific year and month to view the summary
+statistics for arrival and departure delays."
+
+# vis2_instruction <- "<ul><li>Select specified origin, destination and year to 
+# view flight map.</li></ul><ul><li>Red pinpoint represents origin airport and blue 
+# pinpoint represents destination airport. Green pinpoints are the airports which 
+# experienced cascading delay due to the flight from origin to destination.</li>
+# </ul><ul><li>You may scroll down to compare the percentage of delayed arrival 
+# and departure flights of destination aiports from the same origin airport in 
+# the dataframe below.</li></ul>"
+
+vis2_instruction <- "Select specified origin, destination and year to 
+view flight map."
+
+vis2_instruction2 <- "<span style='color: #d63e2a;'>Red </span>
+pinpoint represents origin airport. <br><span style='color: #38a9dc;'>Blue </span>
+pinpoint represents destination airport. <br><span style='color: #71ae26;'>Green </span>
+pinpoints are the airports which experienced cascading delays due to the flight delay from 
+origin to destination."
+# <br><br>You may scroll down to compare the percentage of delayed arrival 
+# and departure flights of destination aiports from the same origin airport in 
+# the dataframe below."
+
+# vis3_instruction <- "<ul><li>Select regression mode, year and flight direction.
+# </li></ul><ul><li>The variables are independent factors that we model to find 
+# their relationship with flight delay.</li></ul><ul><li>Selecting the linear 
+# regression model 'lm' shows a barplot, while selecting the decision tree model 
+# 'dt' shows a tree plot where left of each split is true, right is false.</li>
+# </ul>"
+
+vis3_instruction <- "Select fight type and year to view relationships between variables
+and flight delays."
+
+vis4_instruction <- "Select flight type and year to view Decision Tree plots."
+
+explanation_of_vars <- HTML("<h3> Explanation of variables </h3>
+<div style='font-size: 16px;'>
+  <ul><li><em>Distance:</em><br> distance of route (km)</li></ul>
+  <ul><li><em>(Origin/Destination) Precipitation:</em><br>  precipitation (mm) in the state of the origin/destination airport</li></ul>
+  <ul><li><em>(Origin/Destination) Snow:</em><br>  snowfall (mm) in the state of the origin/destination airport</li></ul>
+  <ul><li><em>(Origin/Destination) Snow Depth:</em><br>  snow depth (mm) in the state of the origin/destination airport</li></ul>
+  <ul><li><em>(Origin/Destination) Mean Temperature:</em><br>  mean temperature (°C) in the state of the origin/destination airport</li></ul>
+  <ul><li><em>Autumn, Spring, Summer, Winter:</em><br>  seasons</li></ul>
+  <ul><li><em>Monday, Tuesday, Wednesday, etc.:</em><br>  days of the week</li></ul>
+  <ul><li><em>(Departure/Arrival) Time: 12am-6am:</em><br>  scheduled departure/arrival time between 12am to 6am</li></ul>
+  <ul><li><em>(Departure/Arrival) Time: 6am-12pm:</em><br>  scheduled departure/arrival time between 6am to 12pm</li></ul>
+  <ul><li><em>(Departure/Arrival) Time: 12pm-6pm:</em><br>  scheduled departure/arrival time between 12pm to 6pm</li></ul>
+  <ul><li><em>(Departure/Arrival) Time: 6pm-12am:</em><br>  scheduled departure/arrival time between 6pm to 12am</li></ul>
+</div>")
+
+
 # Define UI
 ui <- fluidPage(
   useShinyjs(),
-  theme = shinytheme("cerulean"),
+  # tags$head(tags$style(HTML('.navbar-static-top {background-color: #4D7298;'))),
+  # tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "https://fonts.googleapis.com/css?family=Helvetica+Neue&display=swap")),
+  tags$link(
+    href = "https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:wght@700&family=Puritan&family=Varta:wght@500&display=swap",
+    rel = "stylesheet"
+  ),
+  tags$head(tags$style(HTML("
+  #logo-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+  }
+"))),
   tags$head(tags$style(
     HTML(
       # "body {background: #ADD8E6}",
@@ -136,45 +229,75 @@ ui <- fluidPage(
       }",
       "#main-title {
         font-size:20px;
+        color:#002045;
+        font-family: 'Alegreya Sans SC', sans-serif;
+        font-weight: 700;
       }",
-      "body {margin-left: -15px; margin-right: -15px}",
-      "h1 {margin-top: 0px;}",
-      "li {margin-bottom:3px; font-size:16px;}",
-      "#motivation {margin-bottom:10px;}",
+      "#other-title {
+        font-size:20px;
+        color:#002045;
+        font-family: 'Puritan', sans-serif;
+        font-weight: 400;
+      }",
+      "body {margin-left: -15px; margin-right: -15px; font-size:16px; font-family: 'Varta', sans-serif;}",
+      "h1 {margin-top: 0px; font-family: 'Varta', sans-serif;}",
+      "h3 {font-weight: bold; font-family: 'Varta', sans-serif;}",
+      "li {margin-bottom:3px; font-size:16px; font-family: 'Varta', sans-serif;}",
+      "#motivation {margin-bottom:10px; font-family: 'Varta', sans-serif;}",
       "#plot2 {padding-top:15px;}"
     )
   )),
   navbarPage(
-    title = div(id = "main-title", "Airline Delay Webapp"),
-    tabPanel("Home",
+    # title = div(id = "main-title", "Airline Delay Webapp"),
+    title = div(
+      img(src = "logo.png", height = 25), # set the path and height of the logo image
+      style = "display: flex; align-items: center; justify-content: center;"), # center the logo
+    bg = '#9ea2d1',
+    tabPanel(div(id = "other-title", "Home"),
+            headerPanel("Welcome to the Airline Delay WebApp!"),
+            tags$img(src = "airplane.jpg", width = "100%", height = "300px", style = "padding-bottom: 20px;"),
              HTML(
                paste(
-                 '<div style="padding: 10px 20px"><h1>Welcome to the Airline Delay Webapp!</h1>
-             <h3> Introduction: </h3>
+                 '<div style="padding: 10px 20px">
+             <h3> Introduction </h3>
               <div  style="display: flex; flex-direction: column; align-items: left; font-size:16px;">',
                  writeup_summary,
                  '</div>',
-                 '<h3> Motivation of Selected Timeframe: </h3>',
+                 '<h3> Motivation of Selected Timeframe </h3>',
                  writeup_motivation,
-                 '<h3> Visualisations Explained: </h3>',
+                 '<h3> Visualisations Explained </h3>',
                  '<ol>
-              <li id="motivation"> Visualisation 1: <div>',
+              <li id="motivation"><u> Summary Statistics </u><div>',
                  vis1_writeup,
                  '</div> </li>
-              <li id="motivation"> Visualisation 2: <div>',
+              <li id="motivation"><u> Cascading Delays </u><div>',
                  vis2_writeup,
                  '</div> </li>
-              <li id="motivation"> Visualisation 3: <div>',
+              <li id="motivation"><u> Linear Regression </u><div>',
                  vis3_writeup,
+                 '</div> </li>
+              <li id="motivation"><u> Decision Tree </u><div>',
+                 vis4_writeup,
                  '</div> </li>
               </ol>',
                  '</div>',
                  sep = ''
                )
              )),
-    tabPanel("Vis 1",
+    tabPanel(div(id = "other-title", "Summary Statistics"),
+            headerPanel("Welcome to Summary Statistics!"),
+            tags$img(src = "airplane.jpg", width = "100%", height = "300px", style = "padding-bottom: 20px;"),
+            #  mainPanel(
+              # tags$div(
+              #   HTML(paste('<h3> How to use visualisation </h3>', vis1_instruction)),
+              #   style = "background-color: #f2f2f2; border: 1px solid #ccc; padding: 5px 25px 15px 20px;"
+              # )),
              sidebarLayout(
-               sidebarPanel2(
+               sidebarPanel(
+                tags$div(
+                    HTML(vis1_instruction),
+                    style = "padding-bottom: 20px; font-size: 18px;"
+                  ),
                  selectInput("year", "Select year",
                              choices = NULL,
                              selected = "All"),
@@ -183,8 +306,8 @@ ui <- fluidPage(
                    "Select month",
                    choices = NULL,
                    selected = "All"
-                 ),
-                 out = HTML(paste('<h3> How to use visualisation </h3>', vis1_instruction))
+                 )
+                #  out = HTML(paste('<h3> How to use visualisation </h3>', vis1_instruction))
                ),
                mainPanel(
                  htmlOutput("selected_year"),
@@ -200,9 +323,15 @@ ui <- fluidPage(
                )
              )),
     
-    tabPanel("Vis 2",
+    tabPanel(div(id = "other-title", "Cascading Delays"),
+            headerPanel("Welcome to Cascading Delays!"),
+            tags$img(src = "airplane.jpg", width = "100%", height = "300px", style = "padding-bottom: 20px;"),
              sidebarLayout(
                sidebarPanel2(
+                tags$div(
+                    HTML(vis2_instruction),
+                    style = "padding-bottom: 20px; font-size: 18px;"
+                  ),
                  selectInput(
                    "origin",
                    "Select origin",
@@ -227,7 +356,10 @@ ui <- fluidPage(
                    disabled = TRUE,
                    icon = icon("fas fa-plane", lib = "font-awesome", style = "color:black;")
                  ),
-                 out = HTML(paste('<h3> How to use visualisation </h3>', vis2_instruction))
+                 out =  tags$div(
+                    HTML(vis2_instruction2),
+                    style = "padding-top: 10px;"
+                  )
                ),
                mainPanel(
                  htmlOutput("vis2_welcometext"),
@@ -238,9 +370,15 @@ ui <- fluidPage(
                )
              )),
     
-    tabPanel("Vis 3",
+    tabPanel(div(id = "other-title", "Linear Regression"),
+            headerPanel("Welcome to Linear Regression Coefficients!"),
+            tags$img(src = "airplane.jpg", width = "100%", height = "300px", style = "padding-bottom: 20px;"),
              sidebarLayout(
-               sidebarPanel3(
+               sidebarPanel2(
+                tags$div(
+                  HTML(vis3_instruction),
+                  style = "padding-bottom: 20px; font-size: 18px;"
+                ),
                  # selectInput(
                  #   "model",
                  #   label = "Select model",
@@ -265,28 +403,21 @@ ui <- fluidPage(
                    "Plot!",
                    icon = icon("fas fa-bar-chart", lib = "font-awesome", style = "color:black;")
                  ),
-                 out = HTML(paste('<div><h3> How to use visualisation </h3>', vis3_instruction,"</div>")),
-                 out2 = 
-                   HTML("<h3> Explanation of variables </h3><div style='font-size: 10px;'><div>
-<ul><li>distance: distance of route</div> </li></ul>
-<ul><li>prcp_{origin/dest}: precipitation (mm) in the state of the origin/destination airport</li></ul>
-<ul><li>snow_{origin/dest}: snowfall (mm) in the state of the origin/destination airport</li></ul>
-<ul><li>snwd_{origin/dest}: snow depth (mm) in the state of the origin/destination airport</li></ul>
-<ul><li>tmax_{origin/dest}: maximum temperature (°C) in the state of the origin/destination airport</li></ul>
-<ul><li>tmin_{origin/dest}:minimum temperature (°C) in the state of the origin/destination airport</li></ul>
-<ul><li>season_*: autumn, spring, summer and winter</li></ul>
-<ul><li>day_of_week_*: 1 to 7 represents Monday to Sunday</li></ul>
-<ul><li>crs_arr_bin_00-06: departure time 0000 to before 0600</li></ul>
-<ul><li>crs_arr_bin_06-12: departure time 0600 to before 1200</li></ul>
-<ul><li>crs_arr_bin_12-18: departure time 1200 to before 1800</li></ul>
-<ul><li>crs_arr_bin_18-00: departure time 1800 onwards</li></ul></div>")
+                #  out = HTML(paste('<div><h3> How to use visualisation </h3>', vis3_instruction,"</div>")),
+                 out = explanation_of_vars
                ),
                mainPanel(htmlOutput("vis3_welcometext"),
                          uiOutput("vis3_plot"))
              )),
-    tabPanel("Vis 4",
+    tabPanel(div(id = "other-title", "Decision Tree"),
+            headerPanel("Welcome to Decision Tree Plots!"),
+            tags$img(src = "airplane.jpg", width = "100%", height = "300px", style = "padding-bottom: 20px;"),
              sidebarLayout(
-               sidebarPanel3(
+               sidebarPanel2(
+                tags$div(
+                  HTML(vis4_instruction),
+                  style = "padding-bottom: 20px; font-size: 18px;"
+                ),
                  # selectInput(
                  #   "model",
                  #   label = "Select model",
@@ -311,24 +442,11 @@ ui <- fluidPage(
                    "Plot!",
                    icon = icon("fas fa-bar-chart", lib = "font-awesome", style = "color:black;")
                  ),
-                 out = HTML(paste('<div><h3> How to use visualisation </h3>', vis3_instruction,"</div>")),
-                 out2 = 
-                   HTML("<h3> Explanation of variables </h3><div style='font-size: 10px;'><div>
-<ul><li>distance: distance of route</div> </li></ul>
-<ul><li>prcp_{origin/dest}: precipitation (mm) in the state of the origin/destination airport</li></ul>
-<ul><li>snow_{origin/dest}: snowfall (mm) in the state of the origin/destination airport</li></ul>
-<ul><li>snwd_{origin/dest}: snow depth (mm) in the state of the origin/destination airport</li></ul>
-<ul><li>tmax_{origin/dest}: maximum temperature (°C) in the state of the origin/destination airport</li></ul>
-<ul><li>tmin_{origin/dest}:minimum temperature (°C) in the state of the origin/destination airport</li></ul>
-<ul><li>season_*: autumn, spring, summer and winter</li></ul>
-<ul><li>day_of_week_*: 1 to 7 represents Monday to Sunday</li></ul>
-<ul><li>crs_arr_bin_00-06: departure time 0000 to before 0600</li></ul>
-<ul><li>crs_arr_bin_06-12: departure time 0600 to before 1200</li></ul>
-<ul><li>crs_arr_bin_12-18: departure time 1200 to before 1800</li></ul>
-<ul><li>crs_arr_bin_18-00: departure time 1800 onwards</li></ul></div>")
+                #  out = HTML(paste('<div><h3> How to use visualisation </h3>', vis3_instruction,"</div>")),
+                 out = explanation_of_vars
                ),
-               mainPanel(htmlOutput("vis4_welcometext"),
-                         uiOutput("vis4_image"))
+               mainPanel(htmlOutput("vis4_welcometext"), withSpinner(
+                         uiOutput("vis4_image"), color = "#615fa0"))
              ))
   )
 )
@@ -362,9 +480,10 @@ server <- function(input, output) {
 
   output$selected_year <- renderText({
     if (input$year != "") {
-      paste0("Data of flight delays in Year ", input$year)
-    } else {
-      paste0("Please select a year using the dropdown on the left panel")
+      paste0(tags$p(tags$b("Data of flight delays in Year ", input$year, style = "text-decoration: underline;")))
+    } 
+    else {
+      paste0(tags$p(tags$b("Please select a year using the dropdown on the left panel", style = "color: red;")))
     }
   })
 
@@ -383,7 +502,7 @@ server <- function(input, output) {
     } else {
       ggplot(filtered_data_year(), aes(x = Month, y = Arr_Delay_Count)) +
         geom_bar(stat = "identity",
-                 fill = "skyblue",
+                 fill = "#bbb7cf",
                  color = "black") +
         labs(title = "Monthly Aggregated Delay Data",
              x = "Month",
@@ -438,7 +557,7 @@ server <- function(input, output) {
         ggplot(filtered_data_binned_arr(),
                aes(x = monthPlot_bins, y = value)) +
           geom_bar(stat = "identity",
-                   fill = "green",
+                   fill = "#615fa0",
                    color = "black") +
           labs(
             title = paste0("Arrival Flights Delay Data (", input$month, ")"),
@@ -462,7 +581,7 @@ server <- function(input, output) {
                aes(x = monthPlot_bins, y = value)) +
           geom_bar(
             stat = "identity",
-            fill = "purple",
+            fill = "#615fa0",
             color = "black"
           ) +
           labs(
@@ -516,7 +635,7 @@ server <- function(input, output) {
   reactive_text <- eventReactive(input$submit_button, {
     cascade_data <- dat()
     if (nrow(cascade_data) == 0) {
-      HTML(
+      tags$p(tags$b(HTML(
         "<div> You have selected",
         input$origin,
         "-->",
@@ -524,26 +643,28 @@ server <- function(input, output) {
         "in Year",
         input$year2,
         "<br></br>",
-        "However, the chosen inputs has 0 flights recorded. </div>"
-      )
+        "However, the chosen inputs has 0 flights recorded. </div>",
+        style = "text-decoration: underline;"
+      )))
     } else {
-      paste(
+      paste(tags$p(tags$b(
         "You have selected",
         input$origin,
         "-->",
         input$destination,
         "in Year",
-        input$year2
-      )
+        input$year2,
+        style = "text-decoration: underline;"
+      )))
     }
   })
   
-  output$vis2_welcometext <- renderUI({
+  output$vis2_welcometext <- renderText({
     if (input$origin == "" ||
         input$destination == "" || input$year2 == "") {
-      paste0("Please select all inputs from the left panel")
+      paste0(tags$p(tags$b("Please select all inputs from the left panel", style = "color: red;")))
     } else if (input$submit_button == 0) {
-      paste0("Please press the enter button")
+      paste0(tags$p(tags$b("Please press the enter button", style = "color: red;")))
     } else {
       reactive_text()
     }
@@ -610,7 +731,7 @@ server <- function(input, output) {
         markerColor = 'red'
       ),
       destination = icons,
-      `cascade dests` = icons2
+      `cascade destinations` = icons2
     )
     
     
@@ -637,6 +758,7 @@ server <- function(input, output) {
         lat = ~ originLat,
         lng = ~ originLng,
         map = map,
+        label = ~ ORIGIN,
         popup = ~ ORIGIN,
         icon = icons
       ) %>%
@@ -660,27 +782,29 @@ server <- function(input, output) {
         data = greenSubset,
         lat = ~ destLat,
         lng = ~ destLng,
+        label = ~ DEST,
         popup = ~ DEST,
         icon = icons2
-      ) %>%
-      addPopups(
-        data = first_row_list,
-        lat = ~ destLat,
-        lng = ~ destLng,
-        popup =  ~ DEST
-      ) %>%
-      addPopups(
-        data = first_row_list,
-        lat = ~ originLat,
-        lng = ~ originLng,
-        popup =  ~ ORIGIN
-      ) %>%
-      addPopups(
-        data = greenSubset,
-        lat = ~ destLat,
-        lng = ~ destLng,
-        popup =  ~ DEST
-      )
+      ) 
+      # %>%
+      # addPopups(
+      #   data = first_row_list,
+      #   lat = ~ destLat+2,
+      #   lng = ~ destLng,
+      #   popup =  ~ DEST
+      # ) %>%
+      # addPopups(
+      #   data = first_row_list,
+      #   lat = ~ originLat,
+      #   lng = ~ originLng,
+      #   popup =  ~ ORIGIN
+      # ) %>%
+      # addPopups(
+      #   data = greenSubset,
+      #   lat = ~ destLat,
+      #   lng = ~ destLng,
+      #   popup =  ~ DEST
+      # )
     
     polyLinesSubset <-
       polyLinesSubset %>% mutate(id = row.names(.)) %>%
@@ -723,13 +847,13 @@ server <- function(input, output) {
       ) %>%
       addLegendAwesomeIcon(iconSet = iconSet,
                            position = "bottomright",
-                           title = "marker legend") %>%
+                           title = "Marker Legend") %>%
       addLegend(
         position = 'topright',
         colors = c("red", "blue"),
-        labels = c("delayed arr to dest", "delayed dep (cascaded)"),
+        labels = c("Delayed Arrival", "Delayed Departure (Cascaded)"),
         opacity = 0.5,
-        title = 'line colour legend'
+        title = 'Line Colour Legend'
       )
     
   })
@@ -845,12 +969,22 @@ server <- function(input, output) {
       content2 <- content(response2, as = 'text')
       json_content2 <- fromJSON(content2)
       coefficients2 <- as.data.frame(json_content2)
+
+      if (input_flight == 'dep') {
+        coefficients_map <- c("prcp_origin" = "Origin Precipitation", 
+        "tmean_origin" = "Origin Mean Temperature")
+      }
+
       output$plot1 <- renderPlot({
         coefficients$Variables <-
           factor(coefficients$Variables,
                  levels = rev(coefficients$Variables[order(coefficients$Coefficients)]))
-        coefficients_processed <-
-          coefficients %>% mutate(colour = ifelse(Coefficients > 0, "#619CFF", "#F8766D"))
+        # coefficients_processed <- coefficients %>% 
+        #   mutate(colour = ifelse(Coefficients > 0, "#619CFF", "#F8766D")) 
+        coefficients_processed <- coefficients %>% 
+          mutate(colour = ifelse(Coefficients > 0, "#619CFF", "#F8766D"))
+
+        
         ggplot(coefficients_processed,
                aes(
                  x = Coefficients,
@@ -865,11 +999,11 @@ server <- function(input, output) {
             legend.text = element_text(size = 14),
             legend.title = element_text(size = 14)
           ) +
-          labs(x = "Correlation", y = "Variables") +
+          labs(x = "Coefficients", y = "Variables") +
           scale_fill_manual(
             name = "Legend",
-            values = c("#F8766D", "#619CFF"),
-            labels = c("negative correlation", "positive correlation")
+            values = c("#bbb7cf", "#615fa0"),
+            labels = c("positive correlation", "negative correlation")
           ) +
           ggtitle("Plot with standardised coefficients (T)")
       })
@@ -894,11 +1028,11 @@ server <- function(input, output) {
             legend.text = element_text(size = 14),
             legend.title = element_text(size = 14)
           ) +
-          labs(x = "Correlation", y = "Variables") +
+          labs(x = "Coefficients", y = "Variables") +
           scale_fill_manual(
             name = "Legend",
-            values = c("#F8766D", "#619CFF"),
-            labels = c("negative correlation", "positive correlation")
+            values = c("#bbb7cf", "#615fa0"),
+            labels = c("positive correlation", "negative correlation")
           ) +
           ggtitle("Plot with unstandardised coefficients (F)")
       })
@@ -916,17 +1050,17 @@ server <- function(input, output) {
   
   reactive_text3 <- eventReactive(input$plot_button, {
       paste0(
-        "Barplot of correlation of variables in relation to ",
+        tags$p(tags$b("Barplot of correlation of variables in relation to ",
         input$flight,
         " flights in Year ",
-        input$year3)
+        input$year3, style = "text-decoration: underline;")))
   })
   
-  output$vis3_welcometext <- renderUI({
+  output$vis3_welcometext <- renderText({
     if (input$flight == "" || input$year3 == "") {
-      paste0("Please select all inputs from the left panel")
+      paste0(tags$p(tags$b("Please select all inputs from the left panel", style = "color: red;")))
     } else if (input$plot_button == 0) {
-      paste0("Please press the plot button")
+      paste0(tags$p(tags$b("Please press the plot button", style = "color: red;")))
     } else {
       reactive_text3()
     }
@@ -952,18 +1086,17 @@ server <- function(input, output) {
   
   reactive_text4 <- eventReactive(input$vis4_plot_button, {
     paste0(
-    "Decision tree of correlation of variables in relation to ",
-    input$flight4,
-    " flights in Year ",
-    input$year4
-  )
+        tags$p(tags$b("Decision tree of correlation of variables in relation to ",
+        input$flight4,
+        " flights in Year ",
+        input$year4, style = "text-decoration: underline;")))
   })
   
-  output$vis4_welcometext <- renderUI({
+  output$vis4_welcometext <- renderText({
     if (input$flight4 == "" || input$year4 == "") {
-      paste0("Please select all inputs from the left panel")
+      paste0(tags$p(tags$b("Please select all inputs from the left panel", style = "color: red;")))
     } else if (input$vis4_plot_button == 0) {
-      paste0("Please press the plot button")
+      paste0(tags$p(tags$b("Please press the plot button", style = "color: red;")))
     } else {
       reactive_text4()
     }
