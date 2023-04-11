@@ -110,7 +110,8 @@ corresponding preceeding years.
 </div>"
 
 vis1_writeup <- "This visualisation shows periodic aggregated 
-data for a chosen year (light purple). For further analysis, the visualisation also 
+data for a chosen year (light purple). The red dots represent the data for the previous year
+so as to show comparison. For further analysis, the visualisation also 
 breaks down to show monthly departure and arrival delays within a specific 
 month (dark purple)."
 vis2_writeup <- "This visualisation shows the cascading of delays for a chosen flight 
@@ -154,6 +155,9 @@ variables, a value less than or equal to 0 can be interpreted as equal to 0.</di
 
 vis1_instruction <- "Select specific year and month to view the summary
 statistics for arrival and departure delays."
+
+vis1_instruction2 <- "<span style='color: #d63e2a;'>Red </span> dots on Monthly Aggregated Delay
+plot represents delay counts from the previous year."
 
 # vis2_instruction <- "<ul><li>Select specified origin, destination and year to 
 # view flight map.</li></ul><ul><li>Red pinpoint represents origin airport and blue 
@@ -293,7 +297,7 @@ ui <- fluidPage(
               #   style = "background-color: #f2f2f2; border: 1px solid #ccc; padding: 5px 25px 15px 20px;"
               # )),
              sidebarLayout(
-               sidebarPanel(
+               sidebarPanel2(
                 tags$div(
                     HTML(vis1_instruction),
                     style = "padding-bottom: 20px; font-size: 18px;"
@@ -306,7 +310,11 @@ ui <- fluidPage(
                    "Select month",
                    choices = NULL,
                    selected = "All"
-                 )
+                 ),
+                out =  tags$div(
+                  HTML(vis1_instruction2),
+                  style = "padding-top: 10px;"
+                )
                 #  out = HTML(paste('<h3> How to use visualisation </h3>', vis1_instruction))
                ),
                mainPanel(
@@ -500,7 +508,7 @@ server <- function(input, output) {
     if (input$year == "") {
       return(NULL)
     } else {
-      ggplot(filtered_data_year(), aes(x = Month, y = Arr_Delay_Count)) +
+      p <- ggplot(filtered_data_year(), aes(x = Month, y = Arr_Delay_Count)) +
         geom_bar(stat = "identity",
                  fill = "#bbb7cf",
                  color = "black") +
@@ -512,6 +520,12 @@ server <- function(input, output) {
           plot.title = element_text(size = 17),
           axis.text = element_text(size = 14)
         )
+      prev_year <- as.numeric(input$year) - 1
+      filtered_data_prev_year <- subset(data, Year == as.character(prev_year))
+      p <- p + geom_point(data = filtered_data_prev_year, color = "red", alpha = 0.5)
+      # hover options: 
+      # ggplotly(p, tooltip = c("Arr_Delay_Count")) %>% layout(hovermode = "y")
+      p
     }
   })
 
