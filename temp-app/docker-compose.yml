@@ -11,7 +11,7 @@ services:
       - ./frontend:/app
 
   backend_cascade:
-    build: ./cascade
+    build: ../modelling/cascade
     ports:
       - "5001:5000"
 
@@ -21,7 +21,7 @@ services:
       - "5432:3306"
   
   model:
-    build: ./ml_models_v2
+    build: ../modelling/ml_models_v2
     depends_on:
       - wait_mysql
     ports:
@@ -38,7 +38,7 @@ services:
     command: /bin/sh -c 'until nc -z mysql 3306; do echo "Waiting for MySQL to start..."; sleep 10; done; echo MySQL is up!'
   
   backend_ml_models:
-    build: ./ml_models_v2
+    build: ../modelling/ml_models_v2
     ports:
       - "1000:5000"
     restart: always

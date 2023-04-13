@@ -1,8 +1,0 @@
-pandas
-scikit-learn
-scipy
-joblib
-Flask
-mysql-connector-python
-matplotlib
-imblearn
