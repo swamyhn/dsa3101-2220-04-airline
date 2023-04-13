@@ -4,7 +4,7 @@ import glob
 #adjustable variables
 joined_weather_path = 'path/to/joined/weather/data/'
 output_path = 'path/to/output/'
-modelling_cols = ['YEAR', 'MONTH', 'DAY_OF_MONTH', 'DAY_OF_WEEK'
+modelling_cols = ['YEAR', 'MONTH', 'DAY_OF_MONTH', 'DAY_OF_WEEK',
        'CRS_DEP_TIME', 'DEP_DELAY', 'DEP_DELAY_GROUP', 
        'CRS_ARR_TIME', 'ARR_DELAY', 'ARR_DELAY_GROUP', 
        'DISTANCE', 'PRCP_ORIGIN', 'SNOW_ORIGIN', 'SNWD_ORIGIN', 
