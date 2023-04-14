@@ -15,10 +15,9 @@ Historical weather data provided by National Centers for Environmental Informati
 The five core elements (stated in the webpage) that we added to our raw airlines data are:
 
     PRCP = Precipitation (tenths of mm)
-
-SNOW = Snowfall (mm)
-SNWD = Snow depth (mm)
-TMAX = Maximum temperature (tenths of degrees C)
-TMIN = Minimum temperature (tenths of degrees C)
+    SNOW = Snowfall (mm)
+    SNWD = Snow depth (mm)
+    TMAX = Maximum temperature (tenths of degrees C)
+    TMIN = Minimum temperature (tenths of degrees C)
 
 \*The scales of the elements will be adjusted during the join, with each PRCP = Precipitation (mm), TMAX = Maximum temperature (degrees C) and TMIN = Minimum temperature (degrees C).
