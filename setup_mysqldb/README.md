@@ -3,7 +3,7 @@
 1. Create database (**airlines**)
 - Run init.sql to create table or copy paste code into mysql workbench and run
 2. Import CSV files
-- Create folder to store all csv files to import
+- Create folder to store all csv files to import (**files containing yearly data that has been cleaned and joined with external weather data**)
 - Go to the directory with the folder, right-click on "Properties"
     - Click on the "Security" tab
     - Under "Group or user names", click on "Edit" and then "Add"
