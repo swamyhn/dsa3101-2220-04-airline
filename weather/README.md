@@ -10,7 +10,7 @@ Historical weather data provided by National Centers for Environmental Informati
 
 2. Download ghcnd_hcn.tar.gz and extract all the raw dly files containing the weather station data.
 
-3. Run join_weather.py to process and join weather elements to our raw airlines data. join extracted weather data with cleaned raw data
+3. Run join_weather.py to process and join weather elements to our raw airlines data.
 
 The five core elements (stated in the webpage) that we added to our raw airlines data are:
 
